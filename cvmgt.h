@@ -4,12 +4,12 @@ c	will work, on strict ansi (e.g. the f2c compiler) you
 c	will need the cvmgt.src function, on the cray CVMGT is
 c	an inline vector instruction
 c
-#ifdef SUN
+#if defined(SUN) && !defined(LINUX)
       real aa,bb,cvmgt
       integer ii
       cvmgt(aa,bb,ii) = ii*aa + (1-ii)*bb
 #endif SUN
-#ifdef CONVEX
+#if defined(CONVEX)
       real aa,bb,cvmgt
       integer ii
       cvmgt(aa,bb,ii) = -ii*aa + (1+ii)*bb
