@@ -1,0 +1,90 @@
+#include "cmhog.def"
+c=======================================================================
+c////////////////////////  CMHOG MAIN PROGRAM  \\\\\\\\\\\\\\\\\\\\\\\\\
+c
+c  written by: Jim Stone
+c  date:       January, 1991
+c  modified1:
+c
+c  PURPOSE:  Implementation of Colella and Woodwards Lagrange plus
+c  remap PPM scheme for gas dynamics.  Designed to work on vector and
+c  massively parallel machines.
+c
+c  HISTORY: none
+c
+c  DOCUMENTATION: none
+c-----------------------------------------------------------------------
+#include "param.h"
+#include "grid.h"
+#include "root.h"
+c-----------------------------------------------------------------------
+      integer iswres,iswhdf,iswhst,iswmov,j,k
+      real zcs,arg
+      external mstart,dataio,solver,nudt,intchk,SPECIAL
+c\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\///////////////////////////////////
+c=======================================================================
+c
+      write(6,"('Welcome to CMHOG version 0.2 [teuben 19-mar-2001]')")
+      iswres = 0
+      iswhdf = 1
+      iswhst = 1
+      iswmov = 1
+      call mstart
+      call dataio(iswres,iswhdf,iswhst,iswmov)
+      write(6,"('Setup complete with ',i2,' warning(s):')") nwarn
+      write(6,"(' entering main loop...')") 
+c
+1000  continue
+        barfract=time/bartime
+	barfract=min(1.0,barfract)
+        call solver
+        nhy  = nhy + 1
+        time = time + dt
+c       re-calculate spiral potential
+        do 1010 k=ks-1,ke+1
+        do 1010 j=js-3,je+3
+          if (y(j).gt.sr) then
+            arg=2.0*((log(y(j)-sr)/tan(spang))-
+     &          (zcenteul(k)-vspiral*time))+pc
+            spyed(j,k)=-spamp*(y(j)-sr)**2*exp(-spsc*(y(j)-sr))*
+     &                ((3.0-spsc*(y(j)-sr))*cos(arg)-
+     &                (2.0/tan(spang))*sin(arg))
+          else
+            spyed(j,k)=0.0
+          endif
+          if (radius(j).gt.sr) then
+            arg=2.0*((log(radius(j)-sr)/tan(spang))-
+     &          (zcenteul(k)-vspiral*time))+pc
+            spycen(j,k)=-spamp*(radius(j)-sr)**2*
+     &                 exp(-spsc*(radius(j)-sr))*
+     &                 ((3.0-spsc*(radius(j)-sr))*cos(arg)-
+     &                 (2.0/tan(spang))*sin(arg))
+            spzcen(j,k)=-2.0*spamp*(radius(j)-sr)**2*
+     &                 exp(-spsc*(radius(j)-sr))*sin(arg)
+            arg=2.0*((log(radius(j)-sr)/tan(spang))-
+     &		(z(k)-vspiral*time))+pc
+            spzed(j,k)=-2.0*spamp*(radius(j)-sr)**2*
+     &                 exp(-spsc*(radius(j)-sr))*sin(arg)
+          else
+            spycen(j,k)=0.0
+            spzed(j,k)=0.0
+            spzcen(j,k)=0.0
+          endif
+1010    continue
+        call intchk(iswres,iswhdf,iswhst)
+        if (ifsen .eq. 1) goto 2000
+        call dataio(iswres,iswhdf,iswhst,iswmov)
+        call SPECIAL
+        call nudt
+      goto 1000
+c
+2000  continue
+      iswres = 1
+      iswhdf = 1
+      iswhst = 1
+      iswmov = 1
+      call dataio(iswres,iswhdf,iswhst,iswmov)
+      zcs = float(nhy*nyz*nzz)/tused
+      write(6,"('Execution terminated with ',i4,' warning(s)')") nwarn
+      write(6,"('zone-cycles per cpu second =',1pe12.5)") zcs
+      end
