@@ -390,7 +390,7 @@ at the numbers.
   % hdp dumpsds -i <index> -d <hdf_file>
 \end{verbatim}
 which writes only the data of set with index 
-{\tt index>.  Index 0 are the phi
+{\tt index}.  Index 0 are the phi
 values, index 1 are the radial values, and those are repeated in 3,4 and
 6,7.  The v, w and d data is in sets 2, 5 and 8.  To get the dimensions,
 use -h instead of -d on sets 0 and 1 to get the header (not the data) and
@@ -976,14 +976,34 @@ for more details on CVS usage}:
 	cvs -d :pserver:anonymous@cvs.astro.umd.edu:/home/cvsroot co cmhog2
 		(this will create a cmhog directory)
 	cd cmhog2
+	configure --help              (study the options you may which to use, see below)
 	configure
 	make cmhog
 	make bench
 
 \end{verbatim}
 
-If compilation fails, e.g. due to the FITSIO interface, you may also manually need to edit
-the Makefile to the correct path of where FITSIO (normally libcfitsio.a ) is located.
+
+\begin{verbatim}
+% configure --help
+...
+Optional Features:
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-cfitsio        enable it, the default is that it won't use CFITSIO
+ 
+Optional Packages:
+  --with-PACKAGE[=ARG]       use PACKAGE [ARG=yes]
+  --without-PACKAGE          do not use PACKAGE (same as --with-PACKAGE=no)
+  --with-pgmax=SIZE          Maxim size grid that can be read with cfitsio
+  --with-cfitsio-prefix=PFX  prefix where cfitsio lives (lib,include or sourse)
+ 
+\end{verbatim}
+
+If compilation still fails, e.g. due to the FITSIO interface, you may also manually need to edit
+the Makefile to the correct path of where FITSIO (normally libcfitsio.a ) is located. Also
+look at the cmhog.def file. Both files will be overwritten if you run {\tt configure} though, so
+use the manual solution with care.
 
 
 \newpage
