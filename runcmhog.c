@@ -1,8 +1,11 @@
 /*
- *  preprocessor to run (a series of) CMHOG:
+ *  runcmhog: preprocessor to run (a series of) CMHOG:
+ *  (the original version is in NEMO/src/image/hdf/cmhog)
+ *
  *  it expects the 'cmhogin' input file to be present in the local
  *  directory, uses that, but any variables can be overridden via
- *  the commandline. 
+ *  the commandline.
+ *
  *  The first argument must be a (non-existent) directory name, in
  *  which a new 'cmhogin' file will be written, and cmhog will be 
  *  run. The 'cmhog' program is allowed to be in the unix PATH
@@ -11,14 +14,18 @@
  *        solution:  precede keyword with "name/"
  *        no new keywords to be added, must be in replace mode
  *
+ *  14-may-2003   also be able to create a directory hierarchy in one call
+ *  21-jul-2003   fix namelist/key=val documentation
  */
 
 #include <stdio.h>
 #include <string.h>
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 
 #define MAXCARDS 256
 
@@ -28,29 +35,61 @@ static int ncards = 0;
 
 static char *haskey(char *, char *);
 
+static char *program_version = "runcmhog:  Version 1.3 21-jul-2003";
+
+static int Qdebug = 0;                  /* -d (debug toggle) */
+
 int main(int argc, char *argv[])
 {
     int i;
-    char *namelist = "cmhogin";
-    char *exefile = "cmhog";
-    char *rundir;
+    char *cp;
+    char *namelist = "cmhogin";		/* -n name */
+    char *exefile = "cmhog";		/* -e name */
+    char *rundir;			/* no flag */
 
     if (argc < 2) usage(argv[0]);
-    rundir = argv[1];
+    i = 1;
+    while (*argv[i] == '-') {
+      cp = argv[i];
+      cp++;
+      switch (*cp) {
+      case 'h':
+	usage(argv[0]); break;
+      case 'd':
+	i++;
+	Qdebug = 1;
+	break;
+      case 'n':
+	i++;  if (i==argc) usage(argv[0]);
+	namelist = argv[i++];
+	break;
+      case 'e' :
+	i++;  if (i==argc) usage(argv[0]);
+	exefile = argv[i++];
+	break;
+      default:
+	break;
+      }
+    }
+    rundir = argv[i++];
+
+    if (Qdebug)
+      fprintf(stderr,"%s -n %s %s\n",exefile,namelist,rundir);
 
     read_namelist(namelist);
-    for (i=2; i<argc; i++)
+    for (; i<argc; i++)
         patch_namelist(argv[i]);
     goto_rundir(rundir);
-    write_namelist(namelist);
+    write_namelist("cmhogin");
     run_program(exefile);
     exit(0);        
 }
 
 int usage(char *name)
 {
-    fprintf(stderr,"Usage: %s run_directory [[namelist:][key=val]]\n",name);
-    exit(0);
+  fprintf(stderr,"%s\n", program_version);
+  fprintf(stderr,"Usage: %s [-d] [-e exe] [-n namelist] run_directory [[namelist/][key=val]]\n",name);
+  exit(0);
 }
 
 read_namelist(char *filename)
@@ -63,6 +102,7 @@ read_namelist(char *filename)
         fprintf(stderr,"File %s could not be opened\n",filename);
         exit(0);
     }
+    if (Qdebug) fprintf(stderr,"Opening namelist %s\n",filename);
     while (fgets(line,256,fp)) {
         /* allocate a new line, with extra space for later insertions */
         database[ncards] = (char *) malloc(sizeof(line)+1+256);
@@ -106,6 +146,10 @@ patch_namelist(char *keyval)
     } 
 
     cp = strchr(key,'=');
+    if (cp==NULL) {
+      fprintf(stderr,"argument \"%s\" : did not find '='\n",key);
+      exit(1);
+    }
     *cp++ = 0;
     strcpy(val,cp);
 
@@ -189,12 +233,36 @@ strinsert(char *a, char *b, int n)
 
 goto_rundir(char *name)
 {
-    if (mkdir(name, 0755)) {
-        fprintf(stderr,"Run directory %s already exists\n",name);
-        exit(1);
-    }
-    if (chdir(name)) exit(2);
+#if 1
+  char *cmd = (char *)malloc(strlen(name) + 30);
+  struct stat fbuf;
+  int retval;
+  extern int errno;
 
+  if (name == 0 || *name == 0) {
+    exit(1);
+  }
+  sprintf(cmd,"mkdir -p %s",name);
+  if (system(cmd)) {
+    fprintf(stderr,"Problem executing \"%s\"\n",cmd);
+    exit(1);    
+  }
+  sprintf(cmd,"%s/cmhogin",name);
+  retval = stat(cmd,&fbuf);
+  if (retval == 0) {
+    fprintf(stderr,"Directory %s already used\n",cmd);
+    exit(1);    
+  } else if (errno != ENOENT) {
+    fprintf(stderr,"Some problem with/in directory %s [%d]\n",cmd,errno);
+    exit(1);    
+  }
+#else
+  if (mkdir(name, 0755)) {
+    fprintf(stderr,"Run directory %s already exists\n",name);
+    exit(1);
+  }
+#endif
+  if (chdir(name)) exit(2);
 }
 
 write_namelist(char *name)
