@@ -66,6 +66,9 @@ case $host_os in
         ;;
 
 esac
+if test -n "$GCC"; then
+  SYSTEM="LINUX"
+fi
 AC_SUBST(SYSTEM)
 AC_SUBST(CMFLAGS)
 
