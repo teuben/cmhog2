@@ -1,7 +1,8 @@
 %\documentstyle[11pt,epsf]{article}
 %\documentstyle[11pt,epsf]{report}
 %\documentclass[11pt,epsf]{report}
-\documentclass[11pt,epsf]{article}
+\documentclass[11pt]{article}
+\usepackage{epsfig}
 
 \pagestyle{myheadings}
 
@@ -39,19 +40,25 @@ Only single runs are covered, restart runs are not discussed.
 
 \section{Introduction}
 
-The Piner, Stone and Teuben ``{\tt cmhog}'' is a PPM code, 
+The ``{\tt cmhog}'' code is an isothermal PPM code, 
 that was adopted to run a 2-dimensional polar-grid gas flow in a 
-barred galaxy. Because of symmetry, only half of the plane is
-simulated, proper boundary condition will take care of the
-other half. The bar is situated along the Y-axis, with 
+barred galaxy (Piner, Stone \& Teuben, 1995 ApJ 449, 508).
+Because of symmetry, only half of the plane is
+simulated, with the appropriate  boundary condition.
+The bar is elongated along the Y-axis, with 
 counter clockwise gas flow. Initially the bar is absent, but
-slowly turned on  while keeping the total mass constant.
+slowly (usually 0.1Gyr) turned on while keeping
+the total mass constant. The simulation
+is usually followed for 1-2 Gyr, to settle into a quasi-stationary
+state, at which time the gas properties (density, flow velocities)
+can be studies and compared to observations.
 
 \section{The ``cmhogin'' input file}
 
 The {\tt cmhog} program uses a classic, but not often used, method of parameter input
 that is a little more rubust to errors than the more often (ab)used method
 of reading information from standard input. It's called {\tt namelist}\index{namelist},
+a specially formatted textfile, 
 and works roughly like magically reading a FORTRAN named common block. 
 
 \subsection{For the programmer}
@@ -116,7 +123,7 @@ will be dicussed later)
 
 \item
 {\tt pgen::aob}
-Axis ratio $a/b$ of the bar, will be > 1.
+Axis ratio $a/b$ of the bar, note it will be $> 1$.
 
 \item
 {\tt pgen::rl}
@@ -132,7 +139,7 @@ Central density, this sets
 
 \item
 {\tt pgen::bartime}
-Time (in Gyr)
+Time for the bar to (linearly) grow to full strength (in Gyr)
 
 \item
 {\tt iocon::dthdf}
@@ -147,13 +154,16 @@ Timestep for {\tt mde/mvt/mvr} data dumps (in Gyr)
 Timestep in {\tt history} file (in Gyr)
 
 \item
-{\tt hycon::tlim=2.0}
+{\tt hycon::tlim}
 Stop time of the integration (in Gyr)
 
 \end{itemize}
 
 
 \subsection{Choice of the grid}
+
+{\Large THE MATH IN THIS SECTION IS ACTUALLY WRONG, DON''T USE IT}
+\bigskip
 
 The grid is a polar grid, and set by the {\tt ggen2} (radial) and 
 {\tt ggen3} (angular) namelist entries, of which the {\tt min} and
@@ -307,6 +317,9 @@ Sample X-Y gridded tangential in a 8bit deep image
 
 \section{NEMO programs}
 
+Most, if not all, NEMO programs come with a manual page that should
+explain the command line parameters (keywords) in more detail.
+
 \subsection{runcmhog}
 
 {\tt cmhog} is a program that needs to be run in a clean directory, and you
@@ -325,7 +338,7 @@ a run directory, e.g.
     % runcmhog -n cmhogin.small run004  aob=3.5
 \end{verbatim}
 
-Jianjun Xu (a student of Jim Stone) once write a nice graphical frontend,
+Jianjun Xu (a student of Jim Stone) once wrote a nice graphical frontend,
 based on Tcl/Tk, to parse and generate cmhogin files. The code still
 exists, but has not been excersized in a long time.
 
@@ -339,6 +352,26 @@ Found 3 scientific data sets in run001/hdf001bg
 3: DENSITY AT TIME=1.00E-01(20,37) Msolar/pc**2  -> [740 elements of type: 5 (FLOAT32)]
 \end{verbatim}\normalsize
 
+\begin{figure}[htbp]
+\epsfysize=5cm
+\epsfbox{denrt.ps}
+\caption{
+Logarithmic density in polar coordinates:\newline
+  \tt \% sdsfits hdf200bg mapd.fits 3\newline
+  \tt \% fitsccd mapd.fits - | ccdmath - - 'log(\%1)' | ccdplot - yapp=denrt.ps/vps
+}
+
+\end{figure}
+
+\begin{figure}[htbp]
+\epsfysize=5cm
+\epsfbox{denxy.ps}
+\caption{
+Logarithmic density in cartesian coordinates:\newline
+  \tt \% hdfgrid hdf200bg - 3 | ccdmath - - 'log(\%1)' | ccdplot - yapp=den.ps/vps
+}
+\end{figure}
+
 \subsection{sdsfits}
 
 The individual ``fields'' from an {\tt hdfXXXbg} files can be converted to FITS files,
@@ -351,10 +384,15 @@ second one the angular.  A ring will thus show up as a vertical structure.
 % sdsfits hdf001bg map001de.fits 3
 \end{verbatim}\normalsize
 
+Here is another plot:
+\footnotesize\begin{verbatim}
+% fitsccd mapd.fits - | ccdmom - - axis=2 mom=0 | ccdprint - x= newline=t | tabplot - 0 1 line=1,1
+\end{verbatim}\normalsize
+it plots total density averaged in rings, as function of cell.
+
 \subsection{hdfgrid}
 
 {\tt hdfgrid}
-\footnote{A good manual page should be available with the man command}
 regrids selected gas properties from our 
 HDF files into a cartesian coordinate system. 
 It is specific to this polar-coordinate problem.
@@ -372,6 +410,8 @@ are computed on the fly. Nearest neighbor cells are
 used for bi-linear interpolation. Some assumptions
 about the symmetry properties of the variables
 have been made.
+
+
 
 \section{flowcode}
 
@@ -395,7 +435,257 @@ of two 2D images with VR and VT, followed by two 1D images
 with the coordinates in Radius and Polar Angle (called PHI)
 A ``vrt'' map is created with a script {\tt mkvrt}.
 
-\section{The Program}
+\subsection{NEMO scripts: mkbar}
+
+Shell scripts are probably currently the easiest way to setup
+problems. In order to make them reusable, much like NEMO
+programs, they should take a series of {\it ``keyword=value''}
+command line arguments.
+
+\footnotesize\begin{verbatim}
+#! /bin/csh -f
+#
+#
+#> nemo.need mkconfig snapadd snapscale snaprotate snapspin
+
+# bar length and axis ratio of bar
+set b=1.4
+set q=0.2
+
+# 
+set n=100
+
+# derived quantities
+set phi=`nemoinp "atand($q)"`
+
+rm bulge line1 line2 bar disk model.dat
+
+mkconfig - $n shell "$q*$b" | snapscale - bulge 1 1,1,0.4
+mkconfig - $n line $b | snaprotate - -  90-$phi z | snapshift - line1 "-$q*$b,0,0"
+mkconfig - $n line $b | snaprotate - - -90-$phi z | snapshift - line2 "$q*$b,0,0"
+mkconfig - $n ring $b | snapscale - bar 1 $q,1,1
+mkconfig - $n ring 2  | snapspin - disk 1
+snapadd disk,bulge,line1,line2,bar model.dat 
+
+\end{verbatim}\normalsize
+
+\begin{figure}[htbp]
+\epsfysize=5cm
+\epsfbox{model1.ps}
+\caption{Face on view of a simple schematic for a counter-clockwise
+rotating bar, as is used in the hydro models:\newline
+ \tt \% snapplot model.dat yapp=model1.ps/vps
+}
+\end{figure}
+
+\subsection{NEMO scripts: project}
+ 
+Projecting a bar to match observations takes 3 geometric parameters:
+position angle and inclination of the galactic disk, and position
+angle of the bar. In addition there will be centering (xpos,ypos,vsys)
+and scaling (pscale, vscale) parameters, that will come later. To
+aid in figuring out the geometric projection, a script {\tt project}
+was written, that projects the model from the previous section. It
+is somewhat taylored for the way we measure angles in astronomy.
+
+\footnotesize\begin{verbatim}
+#! /bin/csh -f 
+#
+#> SCALE inc=0		0:90:1
+#> RADIO rotation=ccw   ccw,cw
+#> SCALE pa=0		-180:180:1
+#> SCALE phi=0		-90:90:1
+#> RADIO yapp=/xs       /xs,/vps,/ps
+#> ENTRY text=  
+
+
+foreach a ($*)
+  set $a
+end
+
+if ($rotation == "cw") then
+  snaprotate model.dat - "atand(tand($phi)/cosd($inc+180)),$inc+180,$pa" zyz |\
+    snapplot - psize=vz/4 yapp=$yapp xlabel="inc=$inc ($rotation) pa=$pa phi=$phi" "ylabel=$text"
+else
+  snaprotate model.dat - "atand(tand($phi)/cosd($inc)),$inc,$pa+180" zyz |\
+    snapplot - psize=vz/4 yapp=$yapp xlabel="inc=$inc ($rotation) pa=$pa phi=$phi" "ylabel=$text"
+endif
+
+\end{verbatim}\normalsize
+
+This script uses NEMO's {\tt tkrun} interface, so you need to run it
+as follows:
+
+\footnotesize\begin{verbatim}
+    % tkrun project
+\end{verbatim}\normalsize
+
+\subsection{NEMO scripts: mkbar\_cube\_ref.csh}
+
+The script listed below is an older one where the geometry (cw/ccw) was not 
+properly programmed, but included for completeness. It will use a reference
+cube ({\tt n4303cube.fits}) to aid in matching up the theoretical data with
+an observation.
+
+\footnotesize\begin{verbatim}
+#! /bin/csh -f
+#
+#  This scripts takes an HDF output snapshot file from cmhog
+#  (bar hydro, polar coordinates), projects it to a requested
+#  sky view, and using WIP summarizes the results
+#  Bar is conveniently oriented along Y axis (PA=0), and flows CCW.
+#  For CW rotating galaxies you may have to add 180 to 'inc' and/or 'pa'
+#
+#
+#  23-sep-95	Created				Peter Teuben
+#  15-nov-95    beam=0.2 frang=45
+#  24-nov-95    defaults for more central region, fixed dependancies
+#   9-jul-96    hacking for N5383 
+#  24-jul-00    BIMA proposal N4303 et al.
+#   5-sep-00    modified to write cubes instead of moment maps
+#  12-mar-01    radecvel=t to make karma swallow these fits files
+#  13-mar-01    use phi,inc,pa (no more +/- 180) and documented geometry
+#               (notice that earlier versions had sign of radial vel wrong)
+#  23-mar-01    added a refmap and fixed refscale; this assumes that the refmap
+#		(often a cube) has the reference pixel defined to the be 
+#		center of the galaxy (bimasong data often don't do the VELO axis correct)
+#  17-apr-01    added velocity referencing using 'vsys' to be at v=0 in the model cube
+#               (bugs when model and data have different delta-V)
+
+if ($#argv == 0) then
+  echo Usage: $0 in=HDF_DATASET out=BASENAME ...
+  echo Gridding and projecting 2D CMHOG hydro models to given bar viewing angles
+  exit 0
+endif
+
+# 			Required Keywords
+unset in
+unset out
+# 			Defaulted Keywords
+set pa=0
+set inc=0
+set phi=0
+set rmax=6
+set n=200
+set beam=0.05
+set color=1
+set clean=1
+set refmap=n4303cube.fits
+set pscale=0.5
+set vscale=1
+set vsys=0
+#			Velocity gridding for cube  (dv=2*vmax/nvel)
+set nvel=50
+set vmax=250
+
+#			Parse commandline to (re)set keywords
+foreach a ($*)
+  set $a
+end
+#			Show i'm happy
+echo Files: in=$in out=$out 
+echo Grid: rmax=$rmax n=$n beam=$beam
+echo Projection: phi=$phi inc=$inc pa=$pa
+#                       Derived quantities
+set cell=`nemoinp "2*$rmax/$n"`
+set range="-${rmax}:${rmax}"
+echo "      Derived: cell=$cell"
+
+
+#   referencing 
+set nz=(`fitshead $refmap | grep ^NAXIS3 | awk '{print $3}'`)
+set pz=(`fitshead $refmap | grep ^CRPIX3 | awk '{print $3}'`)
+set vz=(`fitshead $refmap | grep ^CRVAL3 | awk '{print $3}'`)
+set dz=(`fitshead $refmap | grep ^CDELT3 | awk '{print $3}'`)
+
+set dz1=`nemoinp "2000*$vmax/$nz"`
+set vref=`nemoinp "($vz-1000*$vsys)/($dz1)+$nvel/2+0.5"`
+#set vscale=`nemoinp "$vscale*(2*$vmax/$nvel)/($dz/1000)"`
+set refscale=$pscale,$pscale,$vscale
+#                                    CHECK : is this -0.5 or +0.5   ?????
+set refcen=`nemoinp $n/2-0.5`
+#set refpix=$refcen,$refcen,$vref
+
+
+#   now assuming model is centered, as well as data cube
+set vref=`nemoinp $nvel/2+0.5`
+###set vref=`nemoinp $nvel/2-0.5`
+set refpix=$refcen,$refcen,$vref
+
+
+echo $nz $pz $vz $dz 
+echo Vsys at OBS pixel: `nemoinp "(1000*$vsys-$vz)/$dz+$pz"` 
+echo REFPIX:   $refpix
+echo REFSCALE: $refscale
+
+
+#> nemo.need tabtos snaptrans snaprotate snapadd snapgrid ccdsmooth ccdmath ccdfits fitshead
+
+set tmp=tmp$$
+if (! -e $out.den.fits) then
+
+    # convert the half-plane HDF file to a full plane snapshot file
+
+    tsd in=$in out=$tmp.tab coord=t
+    if ($status) goto cleanup
+    tabtos in=$tmp.tab out=$tmp.s0 block1=x,y,vx,vy,mass
+    snaptrans in=$tmp.s0 out=$tmp.s1 ctypei=cyl ctypeo=cart
+    snaprotate in=$tmp.s1 out=$tmp.s2 theta=180 order=z
+    snapadd $tmp.s1,$tmp.s2 $tmp.s3
+
+    # project for skyview, and create a intensity and velocity field
+
+    snaprotate $tmp.s3 $tmp.snap \
+        "atand(tand($phi)/cosd($inc)),$inc,$pa" zyz
+
+    foreach mom (0 1 2)
+         snapgrid in=$tmp.snap out=$tmp.$mom \
+                xrange=$range yrange=$range nx=$n ny=$n moment=$mom mean=t
+         ccdsmooth in=$tmp.$mom out=$tmp.$mom.s gauss=$beam
+    end
+    ccdmath $tmp.1.s,$tmp.0.s $tmp.vel %1/%2
+## BUG: ifgt() doesn't work
+##    ccdmath $tmp.0.s - "ifgt(%1,0,log(%1),-10)" | ccdfits - $out.den.fits
+    ccdmath $tmp.0.s - "log(%1)" | ccdmath - - "ifeq(%1,0,-10,%1)" | ccdfits - $out.den.fits  \
+        object=$in comment="$0 $in $out $pa,$inc,$phi,$range,$n,$beam"  \
+	refmap=$refmap scale=$refscale refpix=$refpix
+    ccdmath $tmp.2.s,$tmp.0.s,$tmp.vel - "sqrt(%1/%2-%3*%3)" | ccdfits - $out.sig.fits \
+        object=$in comment="$0 $in $out $pa,$inc,$phi,$range,$n,$beam" 	\
+	refmap=$refmap scale=$refscale refpix=$refpix
+    ccdfits $tmp.vel $out.vel.fits \
+        object=$in comment="$0 $in $out $pa,$inc,$phi,$range,$n,$beam" 	\
+	refmap=$refmap scale=$refscale refpix=$refpix
+
+
+### BUG:      ccdmath - - "ifgt(%1,0,log(%1),-10)" |\
+
+
+    # now also create the (smoothed) cube
+    snapgrid in=$tmp.snap out=- \
+          xrange=$range yrange=$range zrange=-${vmax}:${vmax} \
+	  xvar=x yvar=y zvar=-vz \
+	  nx=$n ny=$n nz=$nvel moment=0 mean=t |\
+      ccdsmooth - - gauss=$beam |\
+      ccdmath - - "log(%1)" |\
+      ccdmath - - "ifeq(%1,0,-10,%1)" |\
+      ccdfits - $out.cube.fits \
+        object=$in comment="$0 $in $out $pa,$inc,$phi,$range,$n,$beam" \
+	refmap=$refmap scale=$refscale refpix=$refpix
+
+    rm -fr $tmp.*
+else
+    echo Warning: skipping gridding and projecting
+endif
+exit 0
+
+cleanup:
+    if ($clean) rm $tmp.*
+
+\end{verbatim}\normalsize
+
+
+
+\section{cmhog: the Program}
 
 Files are .src (fortran source to be pre-processed by cpp) and 
 .inc (for the preprocessor) and .h (standard fortran includes).
@@ -418,6 +708,23 @@ Files are .src (fortran source to be pre-processed by cpp) and
 	dataio
 \end{verbatim}
 
+\section{Installation}
+
+The best way to obtain {\tt cmhog} is via 
+anonymous CVS\footnote{See {\tt http://www.astro.umd.edu/~teuben/miriad/cvs.html}
+for more details on CVS usage}: 
+
+\begin{verbatim}
+	cvs -d :pserver:anonymous@cvs.astro.umd.edu:/home/cvsroot login
+		(no password required, just hit ENTER)
+	cvs -d :pserver:anonymous@cvs.astro.umd.edu:/home/cvsroot co cmhog2
+		(this will create a cmhog directory)
+	cd cmhog2
+	configure
+	make cmhog
+	make bench
+\end{verbatim}
+
 \end{document}
 
 \footnotesize\begin{verbatim}
@@ -426,3 +733,9 @@ Files are .src (fortran source to be pre-processed by cpp) and
 
 \begin{verbatim}
 \end{verbatim}
+
+
+
+
+
+
