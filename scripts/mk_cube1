@@ -7,14 +7,16 @@ set m=10
 set out=junk
 set frame=1:1000
 set var=den
-set format=%04d
+set digits=4
 
 foreach _arg ($*)
    set $_arg
 end
 
+set format=%0${digits}d
 
-echo polar=$polar m=$m frame=$frame
+
+echo polar=$polar m=$m frame=$frame format=$format
 
 set n=0
 set r=-${m}:$m
