@@ -6,7 +6,10 @@
 %\usepackage{epsfig}
 
 \documentclass[10pt,dvips]{article}
-\includepackage{graphicx}
+
+\usepackage[dvips]{graphicx}
+\usepackage[hang]{subfigure}
+
 
 \pagestyle{myheadings}
 
@@ -89,12 +92,6 @@ the namelist  that they need.
 
 
 \end{verbatim}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics{denrt.ps}
-\caption{testing 1 2 3 ...}
-\end{figure}
 
 \subsection{For the user}
 
@@ -367,22 +364,18 @@ first axis is the radial coordinate, and will not be a regularly sampled axis. T
 second axis is the angular coordinate, and will be regularly samples
 (normally between $-\pi/2$ and $\pi/2$).
 
+
 \begin{figure}[htbp]
-\epsfbox{denrt.ps}
+\centering
+\subfigure[width=2.2in]{\includegraphics[width=2.2in]{denrt.ps}}
+\hspace{0in}
+\subfigure[width=2.2in]{\includegraphics[width=2.2in]{denxy.ps}}
 \caption{
 Logarithmic density in polar coordinates:\newline
   \tt \% sdsfits hdf200bg mapd.fits 3\newline
-  \tt \% fitsccd mapd.fits - | ccdmath - - 'log(\%1)' | ccdplot - yapp=denrt.ps/vps
-}
-
-\end{figure}
-
-\begin{figure}[htbp]
-\epsfysize=5cm
-\epsfbox{denxy.ps}
-\caption{
+  \tt \% fitsccd mapd.fits - | ccdmath - - 'log(\%1)' | ccdplot - yapp=denrt.ps/vps\newline
 Logarithmic density in cartesian coordinates:\newline
-  \tt \% hdfgrid hdf200bg - 3 | ccdmath - - 'log(\%1)' | ccdplot - yapp=den.ps/vps
+  \tt \% hdfgrid hdf200bg - 3 | ccdmath - - 'log(\%1)' | ccdplot - yapp=den.ps/vps\newline
 }
 \end{figure}
 
@@ -424,6 +417,8 @@ are computed on the fly. Nearest neighbor cells are
 used for bi-linear interpolation. Some assumptions
 about the symmetry properties of the variables
 have been made.
+
+
 
 
 
@@ -484,8 +479,8 @@ snapadd disk,bulge,line1,line2,bar model.dat
 \end{verbatim}\normalsize
 
 \begin{figure}[htbp]
-\epsfysize=5cm
-\epsfbox{model1.ps}
+\centering
+\includegraphics[width=3in]{model1.ps}
 \caption{Face on view of a simple schematic for a counter-clockwise
 rotating bar, as is used in the hydro models:\newline
  \tt \% snapplot model.dat yapp=model1.ps/vps
@@ -788,7 +783,7 @@ Ultra-SPARC     &  167  &       128.0 & 21.4 & f77 -fast \\
 %  full tests on P2200:
 %  20 80.3
 %  40 445.4
-%  80 3193.8
+%  80 3193.8    gcc=run007 4581 w/gcc
 % A few ``2002'' comments:
 \begin{itemize}
 \item An Ultra-SPARC is about twice as efficient as an Intel chip.
