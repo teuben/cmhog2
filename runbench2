@@ -34,7 +34,7 @@ set h3="Data min/max = 0.835872 34.9362"
 echo COMPARING OUTPUT min/max and maps with saved version:
 foreach i (1 2 3)
   echo "================== MAP $i ===================="
-  sdsfits hdf001bg map$i.fits $i |& grep min/max
+  sdsfits hdf0001bg map$i.fits $i |& grep min/max
   if ($i == 1) then
     echo "$h1 (baseline version)"
   else if ($i == 2) then
