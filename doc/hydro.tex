@@ -1,8 +1,12 @@
 %\documentstyle[11pt,epsf]{article}
 %\documentstyle[11pt,epsf]{report}
 %\documentclass[11pt,epsf]{report}
-\documentclass[11pt]{article}
-\usepackage{epsfig}
+
+%\documentclass[11pt]{article}
+%\usepackage{epsfig}
+
+\documentclass[10pt,dvips]{article}
+\includepackage{graphicx}
 
 \pagestyle{myheadings}
 
@@ -85,6 +89,12 @@ the namelist  that they need.
 
 
 \end{verbatim}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics{denrt.ps}
+\caption{testing 1 2 3 ...}
+\end{figure}
 
 \subsection{For the user}
 
@@ -358,7 +368,6 @@ second axis is the angular coordinate, and will be regularly samples
 (normally between $-\pi/2$ and $\pi/2$).
 
 \begin{figure}[htbp]
-\epsfysize=5cm
 \epsfbox{denrt.ps}
 \caption{
 Logarithmic density in polar coordinates:\newline
