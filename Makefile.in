@@ -88,6 +88,8 @@ help:
 #-----------------------------------------------------------------------
 clean:
 	rm -fr *.o *.f cmhog run1
+cleanall: clean
+	rm -fr config.cache config.log config.status
 #-----------------------------------------------------------------------
 tar:	cmhog.tar
 
