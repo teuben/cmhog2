@@ -219,111 +219,65 @@ debugging potentials.
 
 \subsection{Choice of the grid}
 
-{\Large THE MATH IN THIS SECTION IS ACTUALLY WRONG, DON''T USE IT}
 \bigskip
 
-The grid is a polar grid, and set by the {\tt ggen2} (radial) and 
-{\tt ggen3} (angular) namelist entries, of which the {\tt min} and
-{\tt max} variables control the centers of the cells:
+The grid is a polar grid, and set by the {\tt ggen2} (radial, the Y variable) 
+and {\tt ggen3} (angular, the Z variable) namelist entries, 
+of which the {\tt min} and {\tt max} variables control the 
+inner and outer edges of the grid in that dimension resp. The code
+in {\tt ggen.src} will generate a grid based on a number of choices
+of how the grid is specified in the {\tt ggen2} and {\tt ggen3}
+namelists.
 
 \begin{verbatim}
  $ggen2 nbl=132,ymin=0.1,ymax=16.0,yrat=1.03926991,igrid=1,lgrid=.true. $
  $ggen3 nbl=80,zmin=-1.5708,zmax=1.5708,igrid=1,lgrid=.true. $
 \end{verbatim}
 
-although there are 7 essential variables in these 
-two namelist entries, not all should be choosen freely. 
-One possibilty is to choose the 3 radial extent variables
-and derive the remainder from some constraints :
 
+We suggest the following procedure:
 
 \begin{enumerate}
 \item
-choose  {\tt ggen2::ymin} = $y_{min}$, the inner boundary of the grid (in kpc)
-??? is this the radial center of the inner most cell, or the inner boundary???
-if it's the center, what is really the correct formulae for the stuff derived below.
-that will have to change slightly.
+choose  {\tt ggen2::ymin} = $y_{min}$, the inner boundary of the grid (in kpc).
+We normally choose 0.1
 
 \item
-choose {\tt ggen2::ymax} = $y_{max}$, the outer boundary of the grid (in kpc)
-??? is this the radial center of the out most cell, or the outer boundary???
+choose {\tt ggen2::ymax} = $y_{max}$, the outer boundary of the grid (in kpc).
+We normally choose 16.
 
 \item
 choose {\tt ggen2::nbl} = $N_y$, the number of radial zones.
 
 \item
-compute {\tt ggen2::yrat} = $y_{rat}$ from the following formulae:
+choose {\tt ggen2::yrat} = $f$, it should be a little over 1,
+probably around
 $$
-	 y_{rat} = {y_{max} \over y_{min}}^{1/{N_y}}
+	 f = {y_{max} \over y_{min}}^{1/{N_y}}
 $$
+this formulae is based on a simple geometric growth of the cell edges, in reality
+it are the cell sizes that grow geometrically with $f$.
 
 \item
 Compute {\tt ggen3::nbl} = $N_z$, the number of angular zones, such that cells are 
-close to being square from the following relationship that equates the two:
+close to being square from the following relationship that equates the angular
+and radial zone size near at inner boundary:
 $$
-	{{\pi y_{min}} \over N_z} = (y_{rat} - 1 ) y_{min}
+   {{\pi y_{min}} \over N_z} = (y_{max}-y_{min}) { {f-1} \over {f^{N_y}-1} }
 $$
 or
 $$
-N_z =   {  {\pi y_{min}  }   \over  { (y_{rat} - 1 ) y_{min} } }
+N_z =   {  {\pi}   \over  { {y_{max} \over y_{min}}  - 1 } }  { {f^{N_y}-1} \over {f-1} }
 $$
 
 \item
-Compute {\tt ggen3::zmax} = $z_{max}$ from
-$$
-	( \pi - z_{max} ) 2 = {\pi \over N_z}, ~~~~~ or,~~~~~~~
-	z_{max} = \pi ( 1 - {1 \over {2 N_z}})
-$$
+Set {\tt ggen3::zmax} = $z_{max}$  to $\pi/2$ for a half-symmetric plane.
 
 \item
-Compute {\tt ggen3::zmin} = $z_{min}$ from
-$$
-	( z_{min} + \pi ) 2 = {\pi \over N_z}, ~~~~~~ or,~~~~~~~
-	z_{min} = - z_{max} 
-$$
-
+Set {\tt ggen3::zmin} = $z_{min}$ to $-\pi/2$ for a half-symmetric plane.
 
 
 \end{enumerate}
-
-In case we got the boundaries wrong, the following is more appropriate: 
-$r_0$ is the inner boundary, $r_N$ the outer, and $f=1+\epsilon$ the
-geometric factor called {\tt yrat} earlier.
-$$
-r_i = r_{i-1} f, ~~~ i=1..N
-$$
-thus
-$$
-r_N = r_0 f^N
-$$
-and since
-$$
-r_{min} = (r_0+r_1)/2,     ~~~~~ r_{max} = (r_{N-1}+r_N)/2
-$$
-we get
-$$
-r_{min} = r_0 (1+f)/2,   ~~~~~ r_{max} = r_{min} f^{N-1}
-$$
-or
-$$
-r_0 = { 2 \over  { 1+f}}  r_{min}, ~~~~  r_N = r_O f^N
-$$
-
-
-Here are some formulae that we know are correct:
-
-$$
-      r_1 = r_0 + dr, ~~  r_2 = r_1 + dr f  ~~...~~ r_N = r_{N-1} + dr f^{N-1}
-$$
-or following standard summation series (see e.g. G\&R, or Abramowitz)
-$$
-	r_N = r_0 + dr \sum_{k=0}^{N-1}{f^k} = r_0 + dr { {f^N-1} \over { f - 1 }}
-$$
-and
-$$
-     dr =  (r_N - r_0) { {f-1} \over { f^N - 1 }}
-$$
-
 
 
 \section{Output Files}
