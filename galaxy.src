@@ -106,6 +106,7 @@ C
 	call ftclos(flun,status)
 	call ftgerr(status,errtxt)
 	write(*,*) 'ftclos pot0: ',status,' ',errtxt
+        if (status.ne.0) stop
 
 	call ftopen(flun,pot1,rwmode,bsize,status)
 	if (status.eq.0) then
@@ -117,6 +118,7 @@ C
 	  call ftclos(flun,status)
 	  call ftgerr(status,errtxt)
 	  write(*,*) 'ftclos pot1: ',status,' ',errtxt
+          if (status.ne.0) stop
         else
           write(*,*) 'No pot1 - only constant axisymmetric potential'
 	  do 3 k=1,PGMAX
