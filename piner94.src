@@ -19,6 +19,7 @@ C   12-apr-01   better warning when QM exceeds the max for given AOB PJT
 C   21-sep-02   internal grid patch (set nx=ny=0 and no grid used)
 C    4-oct-02   conversion to two pot0,pot1 grid for axisym + 'bar'   PJT
 C   31-jul-03   added rtstart,rtscale                                 PJT
+C   11-aug-03   taper at r0 and r1 now                                PJT
 C
 C   ToDO:
 C	code DACSH()
@@ -239,6 +240,7 @@ c 	            can also choose a pattern speed overriding pgen::rl value
 	   write(*,*) 'Using an external grid of size ',nx,ny
 	   IF(quad.GT.0.0) THEN
 	     write(*,*) 'Now setting pot0 = pot0 + pot1; quad=',quad
+             write(*,*) 'PATCHED: using new averaging in galaxy.src'
 	     DO 513 iy=1,ny
 	       DO 513 ix=1,nx
 		 xpos = (ix-crpix1)*cdelt1 + crval1
@@ -249,7 +251,8 @@ c 	            can also choose a pattern speed overriding pgen::rl value
 		 else
                    taper = exp(-(rpos-rtstart)**2/(2*rtscale**2))
 		 endif
-                 gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy) * taper
+c                write(*,*) 'taper: ',ix,iy,xpos,ypos,rpos,taper
+c                gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy) * taper
  513	     CONTINUE
 	   ELSE
 	     write(*,*) 'Using pot0, quad=',quad
@@ -334,13 +337,13 @@ c	 write(*,*) 'grid: ',pos(1),pos(2),pot,acc(1),acc(2)
 c	 write(*,*) ' c  : ',ix,iy,x,y
 c        write(*,*) ' d  : ',dx,dy,x3,x4,x8,y3,y4,y8
 c-----------------------------------------------------------------------
-c      write(*,*) 'p: ',gpot(ix-1,iy+1),gpot(ix,iy+1),gpot(ix+1,iy+1)
-c      write(*,*) 'p: ',gpot(ix-1,iy  ),gpot(ix,iy  ),gpot(ix+1,iy )
-c      write(*,*) 'p: ',gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
-c      write(*,101) gpot(ix-1,iy+1),gpot(ix,iy+1),gpot(ix+1,iy+1)
-c      write(*,101) gpot(ix-1,iy  ),gpot(ix,iy  ),gpot(ix+1,iy )
-c      write(*,101) gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
- 101  format('p: ',3f11.2)
+c        write(*,*) 'p: ',gpot(ix-1,iy+1),gpot(ix,iy+1),gpot(ix+1,iy+1)
+c        write(*,*) 'p: ',gpot(ix-1,iy  ),gpot(ix,iy  ),gpot(ix+1,iy )
+c        write(*,*) 'p: ',gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
+c        write(*,101) gpot(ix-1,iy+1),gpot(ix,iy+1),gpot(ix+1,iy+1)
+c        write(*,101) gpot(ix-1,iy  ),gpot(ix,iy  ),gpot(ix+1,iy )
+c        write(*,101) gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
+ 101     format('p: ',3f11.2)
 	 RETURN
       ENDIF
       acc(1) = 0.0

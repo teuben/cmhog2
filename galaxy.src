@@ -4,7 +4,7 @@ c////////////////////////  SUBROUTINE GALAXY  \\\\\\\\\\\\\\\\\\\\\\\\\\
 c  defines the potential from either an analytical subroutine
 c  (it should define inipotential() and potential() as defined
 c   by NEMO), or via up to two grid (FITS) files defining the
-c   axisymmetric and  non-axisymmetric parts of the potental
+c   axisymmetric and  non-axisymmetric parts of the potential
 c   on an X-Y grid.
 c
       subroutine galaxy
@@ -214,9 +214,14 @@ C
      &			  +(acc(2)*sin(zcenteul(k)))
 6        continue
          if (y(j).lt.rnstart) 
-     &    call ntaper(diskyed,jn,j,ks,ke+1,y(j),rnstart,rnscale)
+     &    call taper(diskyed,jn,j,ks,ke+1,y(j),rnstart,rnscale)
          if (radius(j).lt.rnstart) 
-     &    call ntaper(diskycen,jn,j,ks,ke+1,radius(j),rnstart,rnscale)
+     &    call taper(diskycen,jn,j,ks,ke+1,radius(j),rnstart,rnscale)
+         if (y(j).gt.rtstart) 
+     &    call taper(diskyed,jn,j,ks,ke+1,y(j),rtstart,rtscale)
+         if (radius(j).gt.rtstart) 
+     &    call taper(diskycen,jn,j,ks,ke+1,radius(j),rtstart,rtscale)
+
 7       continue
       endif
 c
@@ -262,9 +267,14 @@ c            spycen(j,k)=spycen(j,k)*exp(16.0-radius(j))
 c          endif
 8        continue
          if (y(j).lt.rnstart) 
-     &     call ntaper(baryed,jn,j,ks,ke+1,y(j),rnstart,rnscale)
+     &     call taper(baryed,jn,j,ks,ke+1,y(j),rnstart,rnscale)
          if (radius(j).lt.rnstart) 
-     &     call ntaper(barycen,jn,j,ks,ke+1,radius(j),rnstart,rnscale)
+     &     call taper(barycen,jn,j,ks,ke+1,radius(j),rnstart,rnscale)
+
+         if (y(j).gt.rtstart) 
+     &     call taper(baryed,jn,j,ks,ke+1,y(j),rtstart,rtscale)
+         if (radius(j).gt.rtstart) 
+     &     call taper(barycen,jn,j,ks,ke+1,radius(j),rtstart,rtscale)
 9       continue
       endif
 C                                 (pjt - aug 2003: should the first radius not be y ??? )
@@ -298,9 +308,15 @@ c            spzcen(j,k)=spzcen(j,k)*exp(16.0-radius(j))
 c          endif
 10     continue
        if (radius(j).lt.rnstart) 
-     &   call ntaper(barzed,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
+     &   call taper(barzed,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
        if (radius(j).lt.rnstart) 
-     &   call ntaper(barzcen,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
+     &   call taper(barzcen,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
+
+       if (radius(j).gt.rtstart) 
+     &   call taper(barzed,jn,j,ks-1,ke+1,radius(j),rtstart,rtscale)
+       if (radius(j).gt.rtstart) 
+     &   call taper(barzcen,jn,j,ks-1,ke+1,radius(j),rtstart,rtscale)
+
 11    continue
       endif
 c
@@ -327,7 +343,7 @@ c  the potential near the center can be tapered to something more axisymmetric
 c  below radius of rnstart a gaussian taper of scale length rnscale is applied
 c  NOTE:: it is assumed that upon  rad < r0
 c
-      subroutine ntaper(a,ny,j,k1,k2,rad,r0,rs)
+      subroutine taper(a,ny,j,k1,k2,rad,r0,rs)
       integer ny,j,k1,k2
       real a(ny,1),rad,r0,rs
 c
@@ -345,7 +361,7 @@ c
       sum2 = sqrt(sum2/real(k2-k1+1) + sum1*sum1)
       t = exp(- (rad-r0)**2/(2*rs**2))
 
-      write(*,*) 'ntaper ',sum1,sum2,j,k1,k2,rad,t
+      write(*,*) 'taper ',sum1,sum2,j,k1,k2,rad,t
 
       do 101 k=k1,k2
          a(j,k) = t*a(j,k) + (1-t)*sum1
