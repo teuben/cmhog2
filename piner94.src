@@ -15,11 +15,25 @@ C               to correct for bars being along the Y axis in some
 C               simulations. Better was to have this handled in
 C               the caller routines (e.g. potential)
 C   12-apr-01   better warning when QM exceeds the max for given AOB PJT
+C   21-sep-02   internal grid patch (set nx=ny=0 and no grid used)
 C
 C   ToDO:
 C	code DACSH()
 C
 C   NOTE:   it''s not possible to use single quotes in .src files !!!
+C=======================================================================
+c  warning: can only have one 'BLOCK DATA' per program
+      BLOCK DATA
+      INTEGER nx,ny
+      REAL gpot,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,rmax
+      COMMON/ggrid/nx,ny,gpot(512,512),rmax,
+     *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
+      DATA nx/512/
+      DATA ny/512/
+c      DATA nx/0/
+c      DATA ny/0/
+      DATA rmax/18.0/
+      END
 C=======================================================================
       SUBROUTINE inipotential(npar, par, name)
 C
@@ -30,6 +44,10 @@ C
 C-----------------------------------------------------------------------
 C INITIALIZE THE POTENTIAL AND FORCE CALCULATIONS (after Lias INPOT)
 C
+      INTEGER nx,ny
+      REAL gpot,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,rmax
+      COMMON/ggrid/nx,ny,gpot(512,512),rmax,
+     *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
       COMMON/ AREAD/FCMASS,AXIRAT,QUAD,CENDEN,RADLAG, INDEX
       REAL*8 FCMASS, AXIRAT, QUAD, CENDEN, RADLAG
       INTEGER INDEX
@@ -51,13 +69,14 @@ C
       COMMON/PROLA2/COEFF,COEFP,EP,EP2,SHO,CHO,THO,PSIO,CSHO,CTHO
       REAL*8 COEFF, COEFP, EP, EP2, SHO, CHO, THO, PSIO, CSHO, CTHO
 C
-      INTEGER NITER
+      INTEGER NITER,IX,IY
       REAL*8 FUN1, ASINH, Z, DACSH
       REAL*8 RTMAX, VTMAX
       REAL*8 AAXIS, BAXIS, BAXIS2, QUADM, BARMAS, BARDEN, BULMAS, BULDEN
       REAL*8 CENMAS
       REAL*8 RQ, FMAS, AMAS, DMAS, DDMAS, QQ, AT, AX, AY, AZ
       REAL*8 PIGROC
+	REAL*8 xpos,ypos,pot
 C
       REAL*8 PI, FOURPI, GRAVC
       PARAMETER ( PI = 3.141592654, FOURPI = 4. * PI, GRAVC = 4.29569)
@@ -189,6 +208,26 @@ C  POINT AS IN THE HYDRO CODE
       QQ = (QQ + AT * RADLAG) / (RADLAG * RADLAG)
       OMEGS = SQRT(QQ)
       par(1) = omegs
+c                                    set up the internal grid (nx=0 bypasses)
+c	nx = 0
+	IF (nx.GT.0) THEN
+	   crpix1 = 0.5*(nx+1)
+	   crpix2 = 0.5*(ny+1)
+	   crval1 = 0.0
+	   crval2 = 0.0
+	   cdelt1 = 2.0*rmax/(nx-1)
+	   cdelt2 = 2.0*rmax/(ny-1)
+	   write(*,*) 'Internal grid: crpix,crval,cdelt:', 
+     *                crpix1,crval1,cdelt1
+	   DO 512 iy=1,ny
+	      DO 511 ix=1,nx
+		 xpos = (ix-crpix1)*cdelt1 + crval1
+		 ypos = (iy-crpix2)*cdelt2 + crval2
+		 CALL PISOB(ypos, xpos, 0.0d0, pot)		 
+		 gpot(ix,iy) = pot
+ 511	      CONTINUE
+ 512	   CONTINUE
+	ENDIF
       RETURN
       IF(QUAD.GT.QUADM) THEN
 	PRINT 612,QUAD,QUADM
@@ -204,7 +243,58 @@ c----------------------------------------------------------------------
       SUBROUTINE potential(ndim, pos, acc, pot, time)
       INTEGER ndim
       REAL*8 pos(*), acc(*), pot, time
+
+      INTEGER nx,ny
+      REAL gpot,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,rmax
+      COMMON/ggrid/nx,ny,gpot(512,512),rmax,
+     *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
+
+      INTEGER ix,iy
+      REAL x,y,dx,dy,x3,y3,x4,y4,x8,y8
+	
    
+      IF(nx.gt.0) THEN
+	 x = (pos(1)-crval1)/cdelt1 + crpix1
+	 y = (pos(2)-crval2)/cdelt2 + crpix2
+	 ix = nint(x)
+	 iy = nint(y)
+	 dx=x-ix
+	 dy=y-ix
+	 x3=3*dx
+	 y3=3*dy
+	 x4=4*dx
+	 y4=4*dy
+	 x8=2*x4
+	 y8=2*y4
+	 pot = gpot(ix,iy)
+         acc(1) = -( (-2+x4+y3)*gpot(ix-1,iy-1)
+     *              +(  -x8   )*gpot(ix  ,iy-1)
+     *              +( 2+x4-y3)*gpot(ix+1,iy-1)
+     *              +(-2+x4   )*gpot(ix-1,iy)
+     *              +(  -x8   )*gpot(ix  ,iy)
+     *              +( 2+x4   )*gpot(ix+1,iy)
+     *              +(-2+x4-y3)*gpot(ix-1,iy+1)
+     *              +(  -x8   )*gpot(ix  ,iy+1)
+     *              +( 2+x4+y3)*gpot(ix+1,iy+1) )/(12.0*dx);
+
+	 acc(2) = -( (-2+x3+y4)*gpot(ix-1,iy-1)
+     *              +(-2   +y4)*gpot(ix  ,iy-1)
+     *              +(-2-x3+y4)*gpot(ix+1,iy-1)
+     *              +(     -y8)*gpot(ix-1,iy)
+     *              +(     -y8)*gpot(ix  ,iy)
+     *              +(     -y8)*gpot(ix+1,iy)
+     *              +( 2-x3+y4)*gpot(ix-1,iy+1)
+     *              +( 2   +y4)*gpot(ix  ,iy+1)
+     *              +( 2+x3+y4)*gpot(ix+1,iy+1) )/(12.0*dy);
+c	 write(*,*) 'grid: ',pos(1),pos(2),pot,acc(1),acc(2)
+c	 write(*,*) ' c  : ',ix,iy,x,y
+c        write(*,*) ' d  : ',dx,dy,x3,y3,x4,y4,x8,y8
+c-----------------------------------------------------------------------
+c      write(*,*) 'p: ',gpot(ix-1,iy+1),gpot(ix,iy+1),gpot(ix+1,iy+1)
+c      write(*,*) 'p: ',gpot(ix-1,iy  ),gpot(ix,iy  ),gpot(ix+1,iy )
+c      write(*,*) 'p: ',gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
+	 RETURN
+      ENDIF
       acc(1) = 0.0
       acc(2) = 0.0
       acc(3) = 0.0
@@ -213,6 +303,7 @@ c			note exchanged X and Y, since their bar
 c			is along the Y axis, ours along the X
       CALL FISOB(pos(2), pos(1), pos(3), acc(2), acc(1), acc(3))
       CALL PISOB(pos(2), pos(1), pos(3), pot)
+      write(*,*) 'function: ',pos(1),pos(2),pot,acc(1),acc(2)
       END
 C-----------------------------------------------------------------------
       SUBROUTINE FISOB( X, Y, Z, FX, FY, FZ)

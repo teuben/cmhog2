@@ -12,7 +12,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       integer i,j,k,ndim,npar
       real arg
-      character name*5
+      character name*5, fname*80
+      real crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
       real*8 amp,omega,amode,n,aob,qm,rhoc
       real*8 par(8),pos(3),acc(3),pot,dumtime
       external inipotential,potential
@@ -22,15 +23,20 @@ c
 c     assumed that igrav=1 and igeom=1
       namelist /pgen/ amp,npar,amode,n,aob,rl,qm,rhoc,bartime
       namelist /spiral/ spamp,spsc,spang,sppat,sr,pc
+      namelist /pgrid/fname,naxis1,naxis2,
+     *                crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
       omega=0.0
       ndim=3
       npar=7
       name='dummy'
+      naxis1=0
+      naxis2=0
       read (1,pgen)
       write(2,pgen)
       read (1,spiral)
       write(2,spiral)
-c
+      read (1,pgrid)
+      write(2,pgrid)
 C
       do 5 i=1,npar
 	if (i.eq.1) par(i)=omega
@@ -41,8 +47,7 @@ C
 	if (i.eq.6) par(i)=0.0
 	if (i.eq.7) par(i)=rhoc
 5     continue
-c
-c
+
       call inipotential(npar,par,name)
 C   
       if (nyz.gt.1) then

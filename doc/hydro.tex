@@ -793,6 +793,24 @@ of the bar hydro project of {\tt cmhog} implements the potential
 in {\tt piner94.src}, which is (or should be) identical to the
 one in {\tt \$NEMO/src/orbit/potential/data/piner94.f}.
 
+The standard ``piner94'' potential is fixed in size by
+setting the bar length to 5kpc and the velocity amplitude
+at 20 kpc to 164.204 km/s (see discussion in Athanassoula 1992)
+
+The following are the standard ``potpars'' parameters to this potential.
+
+\begin{verbatim}
+  omega           normally set to 0, since it is derived from ``lagrad'', and returned in this slot
+  amode           not used [0]
+  index           power of bar density law, not used ? [1]
+  axirat          Axis ratio a/b of the bar (a number > 1) [2.5]
+  radlag          Lagrangian radius along the bar axis, defined where the forces balance [6.0]
+  quad            Quadrupole moment, measures the bar strength [45,000]
+  cenden          Central Density, sets the slope of the central velocity field [24,000]
+                  (or equivalently, the core radius)
+  
+\end{verbatim}
+
 \section{Installation}
 
 The best way to obtain {\tt cmhog} is via 
