@@ -72,10 +72,12 @@ c
 c  2). Compute yrat from given value of dymin.  Newton Raphson iteration
 c  is required to find the root (yrat) of the function:
 c     fn(yr) = (ymax-ymin) - dy(imin)*[(yr)**nbl - 1]/[yr-1] = 0
+c  apparently the initial guess for yrat is rather essential for 
+c  large nbl. In old code you may find yr=1.01, which doesn't work.
 c
       if (igrid .eq. 2) then
         dy(imin) = dymin
-        yr = 1.01
+        yr = (ymax/ymin)**(1.0/nbl)
         do 220 iter=1,20
           fn = (ymax - ymin) - dymin*(yr**nbl - 1.0)/(yr - 1.0)
           dfn dyr =  -nbl*dymin*yr**(nbl - 1)/(yr - 1.0)
@@ -83,6 +85,7 @@ c
           deltyr  = -fn/dfndyr
           err yr  = abs(deltyr/yr)
           yr = yr + deltyr
+          write(*,*) 'iter,yrat,yrat_err ',iter,yr,erryr
           if (erryr .lt. 1.0e-6) goto 230
 220     continue
         write(6,"('ERROR from GGEN: Newton-Raphson did not converge')")
