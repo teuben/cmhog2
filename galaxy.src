@@ -12,10 +12,18 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       integer i,j,k,ndim,npar
       real arg
-      character name*5, fname*80
+      character name*5, fname*80, errtxt*40,comment*80
       real crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
       real*8 amp,omega,amode,n,aob,qm,rhoc
       real*8 par(8),pos(3),acc(3),pot,dumtime
+      integer flun,bsize,status,rwmode,naxes(2)
+      logical anyf
+
+      INTEGER nx,ny
+      REAL gpot,gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2,grmax
+      COMMON/ggrid/nx,ny,gpot(512,512),grmax,
+     * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
+
       external inipotential,potential
 c\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\////////////////////////////////
 c=======================================================================
@@ -29,14 +37,69 @@ c     assumed that igrav=1 and igeom=1
       ndim=3
       npar=7
       name='dummy'
+      fname=' '
       naxis1=0
       naxis2=0
+      crval1=0.0
+      crval2=0.0
+      cdelt1=1.0
+      cdelt2=1.0
+      crpix1=1.0
+      crpix2=1.0
+      rmax = 18.0
       read (1,pgen)
       write(2,pgen)
       read (1,spiral)
       write(2,spiral)
       read (1,pgrid)
       write(2,pgrid)
+C
+      if (fname .ne. ' ') then
+	write(*,*) 'Using a grid from an external file: ',fname
+	rwmode = 0
+	status = 0
+	call ftgiou(flun,status)
+	call ftgerr(status,errtxt)
+	call ftopen(flun,fname,rwmode,bsize,status)
+	call ftgisz(flun, 2, naxes,status)
+	naxis1 = naxes(1)
+	naxis2 = naxes(2)
+	write(*,*) 'Found image ',naxis1,naxis2
+	call ftg2de(flun,0,0.0,512,naxis1,naxis2,gpot,anyf,status)
+	call ftgerr(status,errtxt)
+	call ftgkye(flun,'CRPIX1',crpix1,comment,status)
+	call ftgkye(flun,'CRPIX2',crpix2,comment,status)
+	call ftgkye(flun,'CRVAL1',crval1,comment,status)
+	call ftgkye(flun,'CRVAL2',crval2,comment,status)
+	call ftgkye(flun,'CDELT1',cdelt1,comment,status)
+	call ftgkye(flun,'CDELT2',cdelt2,comment,status)
+	write(*,*) 'ftopen: ',status,errtxt,naxis1,naxis2
+	write(*,*) 'wcs',crpix1,crpix2,crval1,crval2,cdelt1,cdelt2
+	call ftclos(flun,status)
+	call ftgerr(status,errtxt)
+	write(*,*) 'ftclos: ',status,errtxt
+	nx = naxis1
+	ny = naxis2
+	gcrpix1 = crpix1
+	gcrpix2 = crpix2
+	gcrval1 = crval1
+	gcrval2 = crval2
+	gcdelt1 = cdelt1
+	gcdelt2 = cdelt2
+	grmax   = -1.0
+      else if (naxis1.gt.0 .and. naxis2.gt.0) then
+					
+	write(*,*) 'Using an internal grid; size=',naxis1,naxis2
+	nx = naxis1
+	ny = naxis2
+	gcrpix1 = crpix1
+	gcrpix2 = crpix2
+	gcrval1 = crval1
+	gcrval2 = crval2
+	gcdelt1 = cdelt1
+	gcdelt2 = cdelt2
+	grmax   = rmax
+      endif
 C
       do 5 i=1,npar
 	if (i.eq.1) par(i)=omega

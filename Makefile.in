@@ -53,6 +53,8 @@ PROB   = galaxy
 #	for the intel compiler, use 'gcc -E -traditional'
 #	for newer (2.96 and above) gnu, also add '-traditional'
 #       for solaris, should use /lib/cpp 
+#       NOTE: gcc3.3 will remove -traditional support......
+# 	will need to use the traditional preprocessor
 CPP    = @CPP@
 CMFLAGS= @CMFLAGS@
 FC     = @F77@
@@ -63,7 +65,7 @@ LDFLAGS= @CFLAGS@
 # LIB notes:
 #  for the intel compiler, add -Vaxlib
 #  for solaris, may also need to add LD_LIBRARY_PATH to environment
-LIB    = -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg
+LIB    = -L/usr/local/lib -L/local/lib -ldf -lcpgplot -lz -ljpeg
 
 
 #--------------------  implicit rules  ---------------------------------

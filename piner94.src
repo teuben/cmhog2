@@ -28,10 +28,10 @@ c  warning: can only have one 'BLOCK DATA' per program
       REAL gpot,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,rmax
       COMMON/ggrid/nx,ny,gpot(512,512),rmax,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
-      DATA nx/512/
-      DATA ny/512/
-c      DATA nx/0/
-c      DATA ny/0/
+c      DATA nx/512/
+c      DATA ny/512/
+      DATA nx/0/
+      DATA ny/0/
       DATA rmax/18.0/
       END
 C=======================================================================
@@ -208,9 +208,8 @@ C  POINT AS IN THE HYDRO CODE
       QQ = (QQ + AT * RADLAG) / (RADLAG * RADLAG)
       OMEGS = SQRT(QQ)
       par(1) = omegs
-c                                    set up the internal grid (nx=0 bypasses)
-c	nx = 0
-	IF (nx.GT.0) THEN
+c                                    set up the internal grid if rmax > 0
+	IF (nx.GT.0 .AND. rmax.GT.0) THEN
 	   crpix1 = 0.5*(nx+1)
 	   crpix2 = 0.5*(ny+1)
 	   crval1 = 0.0
@@ -309,7 +308,7 @@ c			note exchanged X and Y, since their bar
 c			is along the Y axis, ours along the X
       CALL FISOB(pos(2), pos(1), pos(3), acc(2), acc(1), acc(3))
       CALL PISOB(pos(2), pos(1), pos(3), pot)
-      write(*,*) 'function: ',pos(1),pos(2),pot,acc(1),acc(2)
+c      write(*,*) 'function: ',pos(1),pos(2),pot,acc(1),acc(2)
       END
 C-----------------------------------------------------------------------
       SUBROUTINE FISOB( X, Y, Z, FX, FY, FZ)
