@@ -120,55 +120,41 @@ else
 endif
 
 if ($wcs) then
-    if (-e "$refmap") then
-	echo DEPRECATING USING A REFMAP....
-	#   referencing for the 3rd axis
-	set nz=(`fitshead $refmap | grep ^NAXIS3 | awk '{print $3}'`)
-	set pz=(`fitshead $refmap | grep ^CRPIX3 | awk '{print $3}'`)
-	set vz=(`fitshead $refmap | grep ^CRVAL3 | awk '{print $3}'`)
-	set dz=(`fitshead $refmap | grep ^CDELT3 | awk '{print $3}'`)
-    
-	# step in model cube, if vscale=1
-	set dz1=`nemoinp "2*$vmax/$nz"`
-	# 
-	set vref=`nemoinp "($vz-$vsys*$vuscale)/($dz1)+$nvel/2+0.5"`
-	#set vscale=`nemoinp "$vscale*(2*$vmax/$nvel)/($dz/1000)"`
-    endif
+    #   get the wcs from the reference map
+    set nx=(`fitshead $refmap | grep ^NAXIS1 | awk '{print $3}'`)
+    set ny=(`fitshead $refmap | grep ^NAXIS2 | awk '{print $3}'`)
+    set px=(`fitshead $refmap | grep ^CRPIX1 | awk '{print $3}'`)
+    set py=(`fitshead $refmap | grep ^CRPIX2 | awk '{print $3}'`)
+    set dx=(`fitshead $refmap | grep ^CDELT1 | awk '{print $3}'`)
+    set dy=(`fitshead $refmap | grep ^CDELT2 | awk '{print $3}'`)
+    set rx=(`fitshead $refmap | grep ^CRVAL1 | awk '{print $3}'`)
+    set ry=(`fitshead $refmap | grep ^CRVAL2 | awk '{print $3}'`)
 
-    set refcen=`nemoinp $n/2+0.5`
-    set vref=`nemoinp $nvel/2+0.5`
-    set crpix=$refcen,$refcen,$vref
+    # set for output fits file
+    set crpix=$px,$py
+    set cdelt=$dx,$dy
+    set crval=$rx,$ry
 
-    #  cdelt in new units
-    set dv=`nemoinp "2*$vmax*$vuscale/$nvel*$vscale"`
-    set dp=`nemoinp "2*$rmax*$puscale/$n*$pscale"`
-    set cdelt=-$dp,$dp,$dv
-
-    # RA/DEC: just report how much the reference pixel in the reference cube is offset from out (ra0,dec0)
-    set ra00=`echo $ra0 | awk -F: '{printf("%.10f\n",((($3/60+$2)/60)+$1)*15)}'`
-    set dec00=`echo $dec0 | awk -F: '{printf("%.10f\n",(($3/60+$2)/60)+$1)}'`
-    echo RA0,DEC0=$ra0,$dec0
-    echo RA00,DEC00=$ra00,$dec00
-    set crval=$ra00,$dec00,`nemoinp "$vsys*$vuscale"`
-    if (-e "$refmap") then
-	set vx=(`fitshead $refmap | grep ^CRVAL1 | awk '{print $3}'`)
-	set vy=(`fitshead $refmap | grep ^CRVAL2 | awk '{print $3}'`)
-	echo Offset in RA and DEC: `nemoinp "(($vx)-($ra00))*3600"`  `nemoinp "(($vy)-($dec00))*3600"` arcsec
-	echo $nz $pz $vz $dz 
-    endif
-    echo Vsys at OBS pixel: `nemoinp "($vsys*$vuscale-$vz)/$dz+$pz"` 
     echo CRPIX:   $crpix
     echo CRVAL:   $crval
     echo CDELT:   $cdelt
-    set wcspars=(crpix=$crpix crval=$crval cdelt=$cdelt radecvel=t)
-    if (-e "$refmap") then
-	set wcspars=($wcspars refmap=$refmap)
-    endif
-    #  BUG?:  the mod-cube is assumed to be centered at their own WCS of (0,0,0)
-    #         the obs-cube has a positional reference pixel which is assumed
-    #         to coincide with (0,0), however
+    set wcspars=(crpix=$crpix,1 crval=$crval,0 cdelt=$cdelt,1 radecvel=t)
+    set wcspars=(refmap=$refmap)
+
+    set xmin=`nemoinp "$dx*($px-0.5)*3600/$pscale"`
+    set xmax=`nemoinp "$dx*($px-$nx-0.5)*3600/$pscale"`
+    set ymin=`nemoinp "$dy*(0.5-$py)*3600/$pscale"`
+    set ymax=`nemoinp "$dy*($ny+0.5-$py)*3600/$pscale"`
+
+    echo Xrange:  $xmin  $xmax
+    echo Yrange:  $ymin  $ymax
+
+    set xrange=${xmin}:${xmax}
+    set yrange=${ymin}:${ymax}
 else
-  set wcspars=()
+    echo "### Fatal error: this script does not work without a refmap yet"
+    exit
+    set wcspars=()
 endif
 
 
@@ -208,7 +194,7 @@ if (! -e $out.den.fits) then
 
     foreach mom (0 1 2)
          snapgrid in=$tmp.snap out=$tmp.$mom \
-                xrange=$range yrange=$range nx=$n ny=$n moment=$mom mean=t
+                xrange=$xrange yrange=$yrange nx=$nx ny=$ny moment=$mom mean=t
          ccdsmooth in=$tmp.$mom out=$tmp.$mom.s gauss=$beam
     end
     ccdmath $tmp.1.s,$tmp.0.s $tmp.vel %1/%2
