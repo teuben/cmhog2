@@ -305,7 +305,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP F77 FFLAGS ac_ct_F77 SET_MAKE FLIBS SYSTEM CMFLAGS FITSIO CFITSIO_LIB EGREP LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT CPP F77 FFLAGS ac_ct_F77 SET_MAKE FLIBS SYSTEM CMFLAGS FITSIO CFITSIO_LIB CFITSIO_INC EGREP LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -853,7 +853,8 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
-  --with-cfitsio-prefix=PFX     Prefix where CFITSIO was installed
+  --with-cfitsio-prefix=PFX
+                          CFITSIO installation prefix (default: $cfdefault)
 
 Some influential environment variables:
   CC          C compiler command
@@ -2438,7 +2439,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:2441:" \
+echo "$as_me:2442:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -2722,7 +2723,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:2725:" \
+echo "$as_me:2726:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -2892,7 +2893,7 @@ _ACEOF
 # flags.
 ac_save_FFLAGS=$FFLAGS
 FFLAGS="$FFLAGS $ac_verb"
-(eval echo $as_me:2895: \"$ac_link\") >&5
+(eval echo $as_me:2896: \"$ac_link\") >&5
 ac_f77_v_output=`eval $ac_link 5>&1 2>&1 | grep -v 'Driving:'`
 echo "$ac_f77_v_output" >&5
 FFLAGS=$ac_save_FFLAGS
@@ -2971,7 +2972,7 @@ _ACEOF
 # flags.
 ac_save_FFLAGS=$FFLAGS
 FFLAGS="$FFLAGS $ac_cv_prog_f77_v"
-(eval echo $as_me:2974: \"$ac_link\") >&5
+(eval echo $as_me:2975: \"$ac_link\") >&5
 ac_f77_v_output=`eval $ac_link 5>&1 2>&1 | grep -v 'Driving:'`
 echo "$ac_f77_v_output" >&5
 FFLAGS=$ac_save_FFLAGS
@@ -3449,6 +3450,10 @@ fi
 
 
 
+FITSIO=NO_FITSIO
+CFITSIO_INC=""
+CFITSIO_LIB=""
+
 # Check whether --enable-cfitsio or --disable-cfitsio was given.
 if test "${enable_cfitsio+set}" = set; then
   enableval="$enable_cfitsio"
@@ -3460,74 +3465,66 @@ if test "$ok" = "yes"; then
   echo "$as_me:$LINENO: checking whether we have CFITSIO" >&5
 echo $ECHO_N "checking whether we have CFITSIO... $ECHO_C" >&6
 
+  cfdefault=/usr/local
+
 
 # Check whether --with-cfitsio-prefix or --without-cfitsio-prefix was given.
 if test "${with_cfitsio_prefix+set}" = set; then
   withval="$with_cfitsio_prefix"
   cfitsio_config_prefix="$withval"
 else
-  cfitsio_config_prefix="/usr/local"
+  cfitsio_config_prefix="use_default"
 fi;
+
+  if test "$cfitsio_config_prefix" = "use_default"; then
+    if test -n "$CFITSIO"; then
+      cfitsio_config_prefix="$CFITSIO"
+    else
+      cfitsio_config_prefix="$cfdefault"
+    fi
+  fi
 
   if test x$cfitsio_config_prefix != x; then
     cdir="$cfitsio_config_prefix"
-    found="no"
-    for dir in $cdir/include $cdir
+    for dir in $cdir/include $cdir/cfitsio $cdir/include/cfitsio $cdir
       do
         if test -f ${dir}/fitsio.h ; then
-                CFITSIO_INC="-I${dir}"
-    		CFITSIO_LIB="-L$cdir/lib"
-    		CFITSIO_LIB="$CFITSIO_LIB -lcfitsio"
-                cat >>confdefs.h <<\_ACEOF
-#define HAVE_LIBCFITSIO 1
-_ACEOF
-
-                echo "$as_me:$LINENO: result: yes: $CFITSIO_INC" >&5
-echo "${ECHO_T}yes: $CFITSIO_INC" >&6
-                found="yes"
-                break;
-	elif test -f ${dir}/cfitsio/fitsio.h ; then
-                CFITSIO_INC="-I${dir}/cfitsio"
-    		CFITSIO_LIB="-L$cdir/lib"
-    		CFITSIO_LIB="$CFITSIO_LIB -lcfitsio"
-                cat >>confdefs.h <<\_ACEOF
-#define HAVE_LIBCFITSIO 1
-_ACEOF
-
-                echo "$as_me:$LINENO: result: yes: $CFITSIO_INC" >&5
-echo "${ECHO_T}yes: $CFITSIO_INC" >&6
-                found="yes"
-                break;
-	elif test -f ${dir}/fitsio/fitsio.h ; then
-                CFITSIO_INC="-I${dir}/fitsio"
-		CFITSIO_LIB="-L$cdir/lib"
-    		CFITSIO_LIB="$CFITSIO_LIB -lcfitsio"
-                cat >>confdefs.h <<\_ACEOF
-#define HAVE_LIBCFITSIO 1
-_ACEOF
-
-                echo "$as_me:$LINENO: result: yes: $CFITSIO_INC" >&5
-echo "${ECHO_T}yes: $CFITSIO_INC" >&6
-                found="yes"
-                break;
+            CFITSIO_INC="-I${dir}"
+            incdir="$dir"
+            break;
         fi
       done
-    if test "$found" = "no"; then
-      echo "$as_me:$LINENO: result: no" >&5
-echo "${ECHO_T}no" >&6
-      { echo "$as_me:$LINENO: WARNING: could not find CFITSIO library..." >&5
-echo "$as_me: WARNING: could not find CFITSIO library..." >&2;}
-      FITSIO=NO_FITSIO
+
+    if test -n "$CFITSIO_INC"; then
+      for dir in $cdir/lib $cdir
+        do
+          if test -f ${dir}/libcfitsio.a ; then
+              CFITSIO_LIB="-L${dir}"
+              break;
+          fi
+        done
+    fi
+
+    if test -z "$CFITSIO_LIB"; then
+       echo "$as_me:$LINENO: result: $cdir (invalid)" >&5
+echo "${ECHO_T}$cdir (invalid)" >&6
+       if test -z "$CFITSIO_INC"; then who="header"; else who="library"; fi
+       { { echo "$as_me:$LINENO: error: CFITSIO ${who} not found, please specify valid --with-cfitsio-prefix=DIR" >&5
+echo "$as_me: error: CFITSIO ${who} not found, please specify valid --with-cfitsio-prefix=DIR" >&2;}
+   { (exit 1); exit 1; }; }
+       FITSIO=NO_FITSIO
     else
-      FITSIO=FITSIO
+       echo "$as_me:$LINENO: result: ${cdir}" >&5
+echo "${ECHO_T}${cdir}" >&6
+       cat >>confdefs.h <<\_ACEOF
+#define HAVE_LIBCFITSIO 1
+_ACEOF
+
+       CFITSIO_LIB="$CFITSIO_LIB -lcfitsio"
+       rm -f src/include/cfitsio ; ln -s $incdir src/include/cfitsio
+       FITSIO=FITSIO
     fi
   fi
-else
-  CFITSIO_INC=""
-  CFITSIO_LIB=""
-  FITSIO=NO_FITSIO
-  { echo "$as_me:$LINENO: WARNING: CFITSIO disabled" >&5
-echo "$as_me: WARNING: CFITSIO disabled" >&2;}
 fi
 
 
@@ -4678,6 +4675,7 @@ s,@SYSTEM@,$SYSTEM,;t t
 s,@CMFLAGS@,$CMFLAGS,;t t
 s,@FITSIO@,$FITSIO,;t t
 s,@CFITSIO_LIB@,$CFITSIO_LIB,;t t
+s,@CFITSIO_INC@,$CFITSIO_INC,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t

@@ -67,7 +67,7 @@ LDFLAGS= @CFLAGS@
 #  for the intel compiler, add -Vaxlib
 #  for solaris, may also need to add LD_LIBRARY_PATH to environment
 CFITSIO = @CFITSIO_LIB@
-LIB    = -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg
+LIB    = -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg $(CFITSIO)
 
 
 #--------------------  implicit rules  ---------------------------------
