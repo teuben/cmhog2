@@ -16,11 +16,13 @@ C               simulations. Better was to have this handled in
 C               the caller routines (e.g. potential)
 C   12-apr-01   better warning when QM exceeds the max for given AOB PJT
 C   21-sep-02   internal grid patch (set nx=ny=0 and no grid used)
+C    4-oct-02   conversion to two pot0,pot1 grid for axisym + 'bar'   PJT
 C
 C   ToDO:
 C	code DACSH()
 C
 C   NOTE:   it''s not possible to use single quotes in .src files !!!
+C 	    (due to the usage of the cpp preprocessor)
 C=======================================================================
 c  warning: can only have one 'BLOCK DATA' per program
       BLOCK DATA
@@ -206,7 +208,7 @@ C  POINT AS IN THE HYDRO CODE
       QQ = (QQ + AT * RADLAG) / (RADLAG * RADLAG)
       OMEGS = SQRT(QQ)
       par(1) = omegs
-c                                    set up the internal grid if rmax > 0
+c                                    set up the internal (axi) grid if rmax > 0
 	IF (nx.GT.0 .and. grmax.gt.0.0) then
 	   crpix1 = 0.5*(nx+1)
 	   crpix2 = 0.5*(ny+1)
@@ -216,7 +218,7 @@ c                                    set up the internal grid if rmax > 0
 	   cdelt2 = 2.0*rmax/(ny-1)
 	   write(*,*) 'Internal grid: crpix,crval,cdelt:', 
      *                crpix1,crval1,cdelt1
-	   DO 512 iy=1,ny
+	   DO 511 iy=1,ny
 	      DO 511 ix=1,nx
 		 xpos = (ix-crpix1)*cdelt1 + crval1
 		 ypos = (iy-crpix2)*cdelt2 + crval2
@@ -224,9 +226,17 @@ c                                    set up the internal grid if rmax > 0
 		 gpot0(ix,iy) = pot
 		 gpot1(ix,iy) = 0.0
  511	      CONTINUE
- 512	   CONTINUE
 	ELSE IF (nx.GT.0) THEN
 	   write(*,*) 'Using an external grid of size ',nx,ny
+	   IF(quad.GT.0.0) THEN
+	     write(*,*) 'Setting pot0 = pot0 + pot1; quad=',quad
+	     DO 513 iy=1,ny
+	       DO 513 ix=1,nx
+		 gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy)
+ 513	     CONTINUE
+	   ELSE
+	     write(*,*) 'Using pot0, quad=',quad
+	   ENDIF
 	ENDIF
       RETURN
       IF(QUAD.GT.QUADM) THEN

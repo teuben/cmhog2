@@ -92,7 +92,11 @@ C
 	  call ftgerr(status,errtxt)
 	  write(*,*) 'ftclos: ',status,errtxt
         else
-          write(*,*) 'No pot1'
+          write(*,*) 'No pot1 - only constant axisymmetric potential'
+	  do 3 k=1,512
+	  do 3 j=1,512
+		gpot1(j,k) = 0.0
+   3	  continue
         endif
 
 	nx = naxis1
