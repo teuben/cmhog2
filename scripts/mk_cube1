@@ -31,7 +31,7 @@ foreach i (`nemoinp $frame format=%03d`)
   if ($polar) then
    sdsfits $in $out $var
   else
-   hdfgrid $in - $var xrange=$r yrange=$r | ccdfits - $out
+   hdfgrid $in - $var xrange=$r yrange=$r | ccdfits - $out radecvel=t
   endif
   mirds9 $out
 end
