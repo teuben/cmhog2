@@ -70,7 +70,9 @@ c     assumed that igrav=1 and igeom=1
       write(2,pgrid)
 C
 C  there are two modes of using PGRID:    when pot0 given, it will 
-C  use the external file (a fits file)
+C  use the external file (a fits file), else it will use an internal
+C  grid, i.e. pot0/pot1 is filled on the fly from the analytical
+C  potential
 C
       if (pot0 .ne. ' ') then
 #ifdef FITSIO
@@ -162,7 +164,7 @@ C
 	gcrval2 = crval2
 	gcdelt1 = cdelt1
 	gcdelt2 = cdelt2
-	rmax = rmax
+	grmax = rmax
 	gomega = omega
 	write(*,*) 'Pattern speed omega = ',omega
       endif
