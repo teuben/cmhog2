@@ -50,7 +50,7 @@ Only single runs are covered, restart runs are not discussed.
 The ``{\tt cmhog}'' code is an isothermal PPM code, 
 that was adopted to run a 2-dimensional polar-grid gas flow in a 
 barred galaxy (Piner, Stone \& Teuben, 1995 ApJ 449, 508).
-Because of symmetry, only half of the plane is
+Because of symmetry, only half of the plane is normally
 simulated, with the appropriate  boundary condition.
 The bar is elongated along the Y-axis, with 
 counter clockwise gas flow. Initially the bar is absent, but
@@ -64,27 +64,30 @@ can be studies and compared to observations.
 
 The {\tt cmhog} program uses a classic, but not often used, method of parameter input
 that is a little more rubust to errors than the more often (ab)used method
-of reading information from standard input. It's called {\tt namelist}\index{namelist},
+of reading information from standard input or some user defined file.
+It's called {\tt namelist}\index{namelist},
 a specially formatted textfile, 
-and works roughly like magically reading a FORTRAN named common block. 
+and works roughly like magically reading a FORTRAN named common block.
+in one read, with a convenient way to set defaults for all values
+in the program.
 
 \subsection{For the programmer}
 
 For the programmer it is very convenient to pass parameters via a namelist.
 After opening the unit somewhere at the beginning of the program
-(cmhog does this in mstart.src) various subroutines can simply read
-the namelist  that they need.
+(cmhog does this in {\tt mstart.src}) various subroutines can simply read
+the namelist  that they need with a simple read statement.
 
 \begin{verbatim}
-    open(unit=1,file='cmhogin' ,status='old')                     ::mstart.src
+    open(unit=1,file='cmhogin' ,status='old')                    ::mstart.src
 
-    real*8 amp,amode,n,aob,qm,rhoc				  ::galaxy.src
+    real*8 amp,amode,n,aob,qm,rhoc                               ::galaxy.src
     real   bartime
     namelist /pgen/ amp,npar,amode,n,aob,rl,qm,rhoc,bartime       
     read (1,pgen)                                                 
 
     logical lgrid
-    namelist /ggen2/ nbl,ymin,ymax,igrid,yrat,dymin,vgy,lgrid	  ::ggen.src
+    namelist /ggen2/ nbl,ymin,ymax,igrid,yrat,dymin,vgy,lgrid    ::ggen.src
     namelist /ggen3/ nbl,zmin,zmax,igrid,zrat,dzmin,vgz,lgrid
     read (1,ggen2)
 
@@ -98,7 +101,8 @@ the namelist  that they need.
 For the user this means all parameters are set in a simple ascii file
 named ``{\tt cmhogin}'' that can be edited. This file must be in the
 current directory when {\tt cmhog} starts to run (see also
-{\tt runcmhog} below).
+{\tt runcmhog} below for an alternative approach). Here is a sample
+{\tt cmhogin} file:
 
 \begin{verbatim}
 
@@ -121,7 +125,7 @@ current directory when {\tt cmhog} starts to run (see also
 
 When {\tt cmhog} finishes, the file {\tt cmhogout} will reflect the full
 status of the namelist, not just the variables entered via the {\tt cmhogin}
-file.
+file. 
 
 The most common ones to modify are (geometry in {\tt ggen2} and {\tt ggen3}
 will be dicussed later)
@@ -184,13 +188,6 @@ Length units must be kpc.
 Pattern speed if you want to override the value derived from pgen::rl
 
 \item
-{\tt pgrid::gamma}
-Scaling factor for the grid potential. This acts like an M/L factor.
-Once the halo is added (parameters have not been implemented), this
-gamma factor can be used to determine the amount of the
-disk contribution w.r.t. maximum disk.
-
-\item
 {\tt pgrid::vhalo}
 Background (softened isothermal) halo potential asymptotic velocity.
 
@@ -199,9 +196,18 @@ Background (softened isothermal) halo potential asymptotic velocity.
 Background (softened isothermal) halo potential core radius.
 
 \item
+{\tt pgrid::gamma}
+Scaling factor for the grid potential. This acts like an M/L factor,
+but is only used when a halo (vhalo>0) is used.
+Once the halo is added  this 
+gamma factor can be used to determine the amount of the
+disk contribution w.r.t. maximum disk.
+
+\item
 {\tt pgrid::nx ,pgrid::ny}
 Setting only these will generate an internal grid, instead of the
-external grid on pot0/pot1.
+external grid on pot0/pot1. It's really a cheat and meant for 
+debugging potentials.
 
 
 \end{itemize}
@@ -316,17 +322,23 @@ $$
 
 
 
-\section{Output}
+\section{Output Files}
 
 For the remainder of the discussion, we will assume all data produced
-by {\tt cmhog} is dumped in a run-directory. 
-Depending on options given to the program, you will find the following files:
+by {\tt cmhog} is dumped in a run-directory. In general, it is a good
+idea to remove any potential files {\tt cmhog} may create, though
+in practice only the {\tt hdfXXXbg} files are the problem makers.
+
+Depending on options given to the program, you may find the following files
+in your run directory:
 
 \begin{itemize}
 
 \item
 {\tt cmhogin}
-Input namelist, that controls the program.
+Input namelist, that controls the program. This is generally
+the only input file (except if pgrid is used, two fits files
+will be input files).
 
 \item
 {\tt cmhogout}
@@ -347,6 +359,10 @@ The NEMO program {\tt tsd} will display the contents of
 such SDS files. Each file contains information for one timestep.
 {\tt hdf000bf} is normally the first one, for $t=0$ at the beginning
 of the simulation.
+\newline
+{\bf NOTE:} Existing dataset will get their new SDS's appended to
+the previous ones. Most scripts that will be discussed in this
+paper, will then break. 
 
 \item
 {\tt mdeXXXbg}
@@ -402,7 +418,7 @@ Found 3 scientific data sets in run001/hdf001bg
 
 but can also print out data values and the coordinate system. In our case, the
 first axis is the radial coordinate, and will not be a regularly sampled axis. The
-second axis is the angular coordinate, and will be regularly samples
+second axis is the angular coordinate, and will be regularly sampled
 (normally between $-\pi/2$ and $\pi/2$).
 
 
@@ -457,9 +473,8 @@ Note that the {\tt vx} and {\tt vy} velocity fields
 are computed on the fly. Nearest neighbor cells are
 used for bi-linear interpolation. Some assumptions
 about the symmetry properties of the variables
-have been made.
-
-
+have been made, in case only a half-plane was
+computed.
 
 
 
@@ -857,7 +872,7 @@ The following are the standard ``potpars'' parameters to this potential.
 In the fall of 2002 the {\tt cmhog} code was modified to handle potentials
 on a grid. Two additive potentials, as FITS files, can be given in the
 (new) {\bf pgrid} directive in the {\tt cmhogin} file. The coordinate
-system in the FITS file, as defined by the CRVAL/CRPIX/CDELT keywords
+system in the FITS file, as defined by the usual CRVAL/CRPIX/CDELT keywords
 in the FITS header, must be linear and in KPC (typically covering -16 to
 16 kpc or so, but perhaps a little more to handle the edges). 
 
@@ -903,22 +918,7 @@ HISTORY  potccd grid0 athan92 0,1,1,2.5,6.5,0,24000 x=-17.5:17.5:0.07 y=-17.5:1
 END
 
 
-
-
-======================  TO DO : : : ========================
-
-- define pattern speed, currently it's inherited from 'rl' in 'pgen' (see cmhogin)
-   $pgen rl=6.0 $
-
-- pot1 is not working yet, so only axisymetric potentials work
-
-
-
 \end{verbatim}
-
-
-
-
 
 
 
@@ -938,8 +938,6 @@ for more details on CVS usage}:
 	make cmhog
 	make bench
 
-NOTES:
-	does not compile with gcc-3.0 ???
 \end{verbatim}
 
 If compilation fails, e.g. due to the FITSIO interface, you may also manually need to edit
@@ -1025,7 +1023,7 @@ to the GNU compiler (and it doesn't matter if this is on an intel or AMD chip)
 \end{itemize}
 
 \begin{verbatim}
-ratio of gnuy to intel compiler on a Piv/2.2
+ratio of gnu to intel compiler on a Piv/2.2
 
  nphi    gnu    intel
   20    4.10     3.31
