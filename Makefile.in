@@ -113,6 +113,13 @@ cmhog: ${OBJ}
 #	$(CPP) -P ${SPEC}.src > ${SPEC}.f
 #	${FC} ${FFLAGS} -c ${SPEC}.f
 
+testgrid: testgrid.src
+	cp testgrid.src testgrid.f
+	${FC} ${FFLAGS} -o testgrid testgrid.f
+
+grid:	grid.c
+	$(CC) -I$(NEMOINC) -I$(NEMOLIB) -o grid grid.c -L$(NEMOLIB) -lnemo -lm
+
 #-----------------------------------------------------------------------
 
 RUN = run1

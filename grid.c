@@ -16,6 +16,7 @@ string defv[] = {
   "dymin=\n        First dy",
   "nz=154\n        Number of angular zones (in half the grid, pi)",
   "tol=1e-6\n      Tolerance in Newton Raphson , if needed",
+  "out=\n          Optional output file with radii and cell sizes of zone edges",
   "VERSION=1.0\n   17-jul-03",
   NULL,
 };
@@ -33,6 +34,7 @@ nemo_main()
   int i, iter;
   int ny = getiparam("ny");
   int nz = getiparam("nz");
+  stream outf;
 
 
   if (hasvalue("dymin")) {   /* Compute yrat from given value of dymin.  
@@ -71,8 +73,12 @@ nemo_main()
   }
   dz = ymin * PI / (double)nz;
 
-  for (i=0; i<=ny; i++)
-    dprintf(1,"%d %g %g\n",i+1,y[i],dy[i]);
+  if (hasvalue("out")) {
+    outf = stropen(getparam("out"),"w");
+    for (i=0; i<=ny; i++)
+      fprintf(outf,"%d %g %g\n",i+1,y[i],dy[i]);
+    strclose(outf);
+  }
   nzy = PI * ymin / dy[0];
   yr = pow(ymax/ymin, 1.0/ny);
   printf("ny=%d ymin=%g ymax=%g yrat=%g dymin=%g dz=%g nzy=%g bad_yrat=%g\n",
