@@ -113,6 +113,7 @@ current directory when {\tt cmhog} starts to run (see also
  $eos ciso=5.0 $
  $pgen amp=10.0,amode=1.0,n=1.0,aob=2.5,rl=6.0,qm=4.5e4,rhoc=2.4e4,bartime=0.1 $
  $spiral spamp=0.0,spang=-0.5236,spsc=1.0,sppat=32.74,sr=4.0,pc=2.328 $
+ $pgrid $
  $iocon dthdf=0.1,dtmovie=5.0,dthist=0.01 $
  $mlims cma1=3.0,cmi1=-2.0,cma2=200.0,cmi2=-200.0,cma3=200.0,cmi3=-200.0 $
 
@@ -164,6 +165,30 @@ Timestep in {\tt history} file (in Gyr)
 \item
 {\tt hycon::tlim}
 Stop time of the integration (in Gyr)
+
+
+\item
+{\tt pgrid::pot0}
+A fits file that contains the axisymmetric part of the potential. 
+Length units must be kpc.
+
+\item
+{\tt pgrid::pot1}
+A fits file that contains the non-axisymmetric part of the potential. 
+Length units must be kpc.
+
+\item
+{\tt pgrid::omega}
+Pattern speed if you want to override the value derived from pgen::rl
+
+\item
+{\tt pgrid::gamma}
+Scaling factor for the grid potential. This acts like a M/L factor.
+
+\item
+{\tt pgrid::nx ,pgrid::ny}
+
+
 
 \end{itemize}
 
