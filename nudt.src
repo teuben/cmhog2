@@ -65,6 +65,8 @@ c
 	write(6,"('timey= ',1e12.5)") timey
 	write(6,"('timez= ',1e12.5)") timez
         nwarn=nwarn+1
+c             temporary hack to stop
+        STOP
       endif
       if ((time+dt) .gt. tlim) dt = tlim-time
 c

@@ -2,11 +2,11 @@
 #define @SYSTEM@
 #define TEUBEN
 #define @FITSIO@
-#define NO_OF_J_ZONES  73
-#define NO_OF_K_ZONES  46
-#define MAX_OF_IJK     73
-#define IMG_X          500
-#define IMG_Y          500 
+#define NO_OF_J_ZONES  257
+#define NO_OF_K_ZONES  160
+#define MAX_OF_IJK     257
+#define IMG_X          256
+#define IMG_Y          256 
 #define PGMAX      @PGMAX@
 #undef  HDFORCES
 
