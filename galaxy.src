@@ -26,11 +26,11 @@ c-----------------------------------------------------------------------
 
       INTEGER nx,ny
       REAL gpot0,gpot1,gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
-      REAL gomega
+      REAL gomega,grtstart,grtscale
       COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
      *          grmax,gomega,
      * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2,
-     *          grhalo,gvhalo,ggamma
+     *          grhalo,gvhalo,ggamma,grtstart,grtscale
 
       external inipotential,potential
 c\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\////////////////////////////////
@@ -41,7 +41,7 @@ c     assumed that igrav=1 and igeom=1
       namelist /spiral/ spamp,spsc,spang,sppat,sr,pc
       namelist /pgrid/pot0,pot1,naxis1,naxis2,rmax,omega,gamma,
      *                crval1,crval2,crpix1,crpix2,cdelt1,cdelt2,
-     *                rhalo,vhalo
+     *                rhalo,vhalo,rtstart,rtscale
       ndim=3
       npar=7
       name='dummy'
@@ -60,6 +60,8 @@ c     assumed that igrav=1 and igeom=1
       gamma=1.0
       rhalo=1.0
       vhalo=0.0
+      rtstart=1000.0
+      rtscale=1000.0
       read (1,pgen)
       write(2,pgen)
       read (1,spiral)
@@ -67,8 +69,8 @@ c     assumed that igrav=1 and igeom=1
       read (1,pgrid)
       write(2,pgrid)
 C
-C  there are two modes of using PGRID:    when pot0 given, it will use the external
-C  file (a fits file)
+C  there are two modes of using PGRID:    when pot0 given, it will 
+C  use the external file (a fits file)
 C
       if (pot0 .ne. ' ') then
 #ifdef FITSIO
@@ -135,6 +137,7 @@ C
 	write(*,*) 'Pattern speed omega = ',omega
 	write(*,*) 'Halo: vhalo,rhalo= ',vhalo,rhalo
 	write(*,*) 'Disk: gamma= ',gamma
+	write(*,*) 'Tapering: start,scale=',rtstart,rtscale
 #else
 	write(*,*) 'Support for FITSIO was not properly encoded'
 	STOP

@@ -18,23 +18,24 @@ C               the caller routines (e.g. potential)
 C   12-apr-01   better warning when QM exceeds the max for given AOB PJT
 C   21-sep-02   internal grid patch (set nx=ny=0 and no grid used)
 C    4-oct-02   conversion to two pot0,pot1 grid for axisym + 'bar'   PJT
+C   31-jul-03   added rtstart,rtscale                                 PJT
 C
 C   ToDO:
 C	code DACSH()
 C
 C   NOTE:   it''s not possible to use single quotes in .src files !!!
-C 	    (due to the usage of the cpp preprocessor)
+C 	    (due to out usage of the cpp preprocessor)
 C=======================================================================
 c  warning: can only have one 'BLOCK DATA' per program
       BLOCK DATA
       IMPLICIT NONE
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      REAL gomegp,rhalo,vhalo,gamma
+      REAL gomegp,rhalo,vhalo,gamma,rtstart,rtscale
       COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
      *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo,gamma
+     *             rhalo,vhalo,gamma,rtstart,rtscale
       DATA nx/0/
       DATA ny/0/
       END
@@ -50,11 +51,11 @@ C INITIALIZE THE POTENTIAL AND FORCE CALCULATIONS (after Lias INPOT)
 C
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      REAL gomegp,rhalo,vhalo,gamma
+      REAL gomegp,rhalo,vhalo,gamma,rtstart,rtscale
       COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
      *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo,gamma
+     *             rhalo,vhalo,gamma,rtstart,rtscale
       COMMON/ AREAD/FCMASS,AXIRAT,QUAD,CENDEN,RADLAG, INDEX
       REAL*8 FCMASS, AXIRAT, QUAD, CENDEN, RADLAG
       INTEGER INDEX
@@ -83,7 +84,7 @@ C
       REAL*8 CENMAS
       REAL*8 RQ, FMAS, AMAS, DMAS, DDMAS, QQ, AT, AX, AY, AZ
       REAL*8 PIGROC
-      REAL*8 xpos,ypos,pot
+      REAL*8 xpos,ypos,rpos,pot
       REAL   rmax
 C
       REAL*8 PI, FOURPI, GRAVC
@@ -241,7 +242,16 @@ c 	            can also choose a pattern speed overriding pgen::rl value
 	     write(*,*) 'Now setting pot0 = pot0 + pot1; quad=',quad
 	     DO 513 iy=1,ny
 	       DO 513 ix=1,nx
-		 gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy)
+		 xpos = (ix-crpix1)*cdelt1 + crval1
+		 ypos = (iy-crpix2)*cdelt2 + crval2
+		 rpos = sqrt(xpos**2+ypos**2)
+		 if (rpos.le.rtstart) then
+c-----------------------------------------------------------------------
+		   gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy)
+		 else
+		   gpot0(ix,iy) = gpot0(ix,iy) + 
+     *			gpot1(ix,iy) * exp((rpos-rtstart)/rtscale)
+		 endif
  513	     CONTINUE
 	   ELSE
 	     write(*,*) 'Using pot0, quad=',quad
@@ -270,11 +280,11 @@ c----------------------------------------------------------------------
 
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      REAL gomegp,rhalo,vhalo,gamma
+      REAL gomegp,rhalo,vhalo,gamma,rtstart,rtscale
       COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
      *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo,gamma
+     *             rhalo,vhalo,gamma,rtstart,rtscale
 
       INTEGER ix,iy
       REAL x,y,dx,dy,x3,y3,x4,y4,x8,y8,tmp

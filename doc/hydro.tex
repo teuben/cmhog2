@@ -213,6 +213,12 @@ Setting only these will generate an internal grid, instead of the
 external grid on pot0/pot1. It's really a cheat and meant for 
 debugging potentials.
 
+\item
+{\tt pgrid/rtstart,pgrid/rtscale}
+The starting radius, and scale-length (in kpc) where an
+exponential taper is applied to the non-axysymmetric part
+of the potential. Normally the defaults are such (1000,1000)
+that a taper is not applied.
 
 \end{itemize}
 
@@ -1080,6 +1086,7 @@ P-III		& 600	&	 91.1 & 54.7  &  80.7 & (laptop) \\ % laptop
 		&	&	 70.8 &       &       & pgf77 -O (version 3.2) \\
 		&	&	 93.6 & 56.2  &  78.6 & ifc -O compiled on Piv \\
 P-III/512 Katmai & 500  &	106.5 & 53.3  &  82.9 & \\  % xeon (P500 at home)
+                &       &        89.5 & 44.3  &       & gcc 3.2.2 @ mdk91 \\
 P-II/MMX        & 233   &       321.0 & 74.8  &  13.7 & g77 -g -O2 \\ % peter(P233MMX at home)
 		&	&	321.6 & 74.9  &  13.7 & ifc -O \\
 P-I             & 166   &       496.1 & 82.4  &   8.9 & g77 -g -O2 \\ % saturn
@@ -1118,6 +1125,8 @@ to the GNU compiler (and it doesn't matter if this is on an intel or AMD chip)
 \item The Alpha is the most efficient processor per clock cycle (native compiler)
 
 \item Piv code running on a Piii chip will slow down the code considerably
+
+\item Compiler version can make a big difference
 
 \end{itemize}
 
