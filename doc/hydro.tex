@@ -1,0 +1,428 @@
+%\documentstyle[11pt,epsf]{article}
+%\documentstyle[11pt,epsf]{report}
+%\documentclass[11pt,epsf]{report}
+\documentclass[11pt,epsf]{article}
+
+\pagestyle{myheadings}
+
+% Some definitions I use in these instructions.
+
+\def\emphasize#1{{\sl#1\/}}
+\def\arg#1{{\it#1\/}}
+\let\prog=\arg
+
+\def\edcomment#1{\iffalse\marginpar{\raggedright\sl#1\/}\else\relax\fi}
+\marginparwidth 1.25in
+\marginparsep .125in
+\marginparpush .25in
+\reversemarginpar
+
+\title{Using CMHOG with NEMO and MIRIAD}
+\author{Peter Teuben}
+% \affil{Astronomy Department, University of Maryland, College Park, MD 20742, USA}
+
+
+\begin{document}
+
+\maketitle
+
+
+\begin{abstract}
+
+An overview is given how to use and extend 
+the Piner, Stone \& Teuben (1995, ApJ 449, 508) hydro code
+{\tt cmhog}, and in particular how HDF output data can be used with
+NEMO and MIRIAD for some basic visualization and data analysis.
+Only single runs are covered, restart runs are not discussed.
+
+\end{abstract}
+
+\section{Introduction}
+
+The Piner, Stone and Teuben ``{\tt cmhog}'' is a PPM code, 
+that was adopted to run a 2-dimensional polar-grid gas flow in a 
+barred galaxy. Because of symmetry, only half of the plane is
+simulated, proper boundary condition will take care of the
+other half. The bar is situated along the Y-axis, with 
+counter clockwise gas flow. Initially the bar is absent, but
+slowly turned on  while keeping the total mass constant.
+
+\section{The ``cmhogin'' input file}
+
+The {\tt cmhog} program uses a classic, but not often used, method of parameter input
+that is a little more rubust to errors than the more often (ab)used method
+of reading information from standard input. It's called {\tt namelist}\index{namelist},
+and works roughly like magically reading a FORTRAN named common block. 
+
+\subsection{For the programmer}
+
+For the programmer it is very convenient to pass parameters via a namelist.
+After opening the unit somewhere at the beginning of the program
+(cmhog does this in mstart.src) various subroutines can simply read
+the namelist  that they need.
+
+\begin{verbatim}
+    open(unit=1,file='cmhogin' ,status='old')                     ::mstart.src
+
+    real*8 amp,amode,n,aob,qm,rhoc				  ::galaxy.src
+    real   bartime
+    namelist /pgen/ amp,npar,amode,n,aob,rl,qm,rhoc,bartime       
+    read (1,pgen)                                                 
+
+    logical lgrid
+    namelist /ggen2/ nbl,ymin,ymax,igrid,yrat,dymin,vgy,lgrid	  ::ggen.src
+    namelist /ggen3/ nbl,zmin,zmax,igrid,zrat,dzmin,vgz,lgrid
+    read (1,ggen2)
+
+
+
+
+\end{verbatim}
+
+\subsection{For the user}
+
+For the user this means all parameters are set in a simple ascii file
+named ``{\tt cmhogin}'' that can be edited. This file must be in the
+current directory when {\tt cmhog} starts to run (see also
+{\tt runcmhog} below).
+
+\begin{verbatim}
+
+ $rescon  $
+ $hycon idiff=1,ifltn=1,tlim=2.0 $
+ $ggen2 nbl=132,ymin=0.1,ymax=16.0,yrat=1.03926991,igrid=1,lgrid=.true. $
+ $ggen3 nbl=80,zmin=-1.5708,zmax=1.5708,igrid=1,lgrid=.true. $
+ $ijb $
+ $ojb $
+ $ikb $
+ $okb $
+ $eos ciso=5.0 $
+ $pgen amp=10.0,amode=1.0,n=1.0,aob=2.5,rl=6.0,qm=4.5e4,rhoc=2.4e4,bartime=0.1 $
+ $spiral spamp=0.0,spang=-0.5236,spsc=1.0,sppat=32.74,sr=4.0,pc=2.328 $
+ $iocon dthdf=0.1,dtmovie=5.0,dthist=0.01 $
+ $mlims cma1=3.0,cmi1=-2.0,cma2=200.0,cmi2=-200.0,cma3=200.0,cmi3=-200.0 $
+
+\end{verbatim}
+
+When {\tt cmhog} finishes, the file {\tt cmhogout} will reflect the status
+of the namelist, but you cannot re-use it (Jim, why is that??? why is the
+format of cmhogin and cmhogout different???)
+
+
+The most common ones to modify are (geometry in {\tt ggen2} and {\tt ggen3}
+will be dicussed later)
+
+\begin{itemize}
+
+\item
+{\tt pgen::aob}
+Axis ratio $a/b$ of the bar, will be > 1.
+
+\item
+{\tt pgen::rl}
+Lagrangian radius, in kpc. This sets the pattern speed.
+
+\item
+{\tt pgen::qm}
+Quadropole moment, this sets the mass fraction of the bar.
+
+\item
+{\tt pgen::rhoc}
+Central density, this sets 
+
+\item
+{\tt pgen::bartime}
+Time (in Gyr)
+
+\item
+{\tt iocon::dthdf}
+Timestep for HDF data dumps (in Gyr)
+
+\item
+{\tt icon::dtmovie }
+Timestep for {\tt mde/mvt/mvr} data dumps (in Gyr)
+
+\item
+{\tt icon::dthist}
+Timestep in {\tt history} file (in Gyr)
+
+\item
+{\tt hycon::tlim=2.0}
+Stop time of the integration (in Gyr)
+
+\end{itemize}
+
+
+\subsection{Choice of the grid}
+
+The grid is a polar grid, and set by the {\tt ggen2} (radial) and 
+{\tt ggen3} (angular) namelist entries, of which the {\tt min} and
+{\tt max} variables control the centers of the cells:
+
+\begin{verbatim}
+ $ggen2 nbl=132,ymin=0.1,ymax=16.0,yrat=1.03926991,igrid=1,lgrid=.true. $
+ $ggen3 nbl=80,zmin=-1.5708,zmax=1.5708,igrid=1,lgrid=.true. $
+\end{verbatim}
+
+although there are 7 essential variables in these 
+two namelist entries, not all should be choosen freely. 
+One possibilty is to choose the 3 radial extent variables
+and derive the remainder from some constraints :
+
+
+\begin{enumerate}
+\item
+choose  {\tt ggen2::ymin} = $y_{min}$, the inner boundary of the grid (in kpc)
+??? is this the radial center of the inner most cell, or the inner boundary???
+if it's the center, what is really the correct formulae for the stuff derived below.
+that will have to change slightly.
+
+\item
+choose {\tt ggen2::ymax} = $y_{max}$, the outer boundary of the grid (in kpc)
+??? is this the radial center of the out most cell, or the outer boundary???
+
+\item
+choose {\tt ggen2::nbl} = $N_y$, the number of radial zones.
+
+\item
+compute {\tt ggen2::yrat} = $y_{rat}$ from the following formulae:
+$$
+	 y_{rat} = {y_{max} \over y_{min}}^{1/{N_y}}
+$$
+
+\item
+Compute {\tt ggen3::nbl} = $N_z$, the number of angular zones, such that cells are 
+close to being square from the following relationship that equates the two:
+$$
+	{{\pi y_{min}} \over N_z} = (y_{rat} - 1 ) y_{min}
+$$
+or
+$$
+N_z =   {  {\pi y_{min}  }   \over  { (y_{rat} - 1 ) y_{min} } }
+$$
+
+\item
+Compute {\tt ggen3::zmax} = $z_{max}$ from
+$$
+	( \pi - z_{max} ) 2 = {\pi \over N_z}, ~~~~~ or,~~~~~~~
+	z_{max} = \pi ( 1 - {1 \over {2 N_z}})
+$$
+
+\item
+Compute {\tt ggen3::zmin} = $z_{min}$ from
+$$
+	( z_{min} + \pi ) 2 = {\pi \over N_z}, ~~~~~~ or,~~~~~~~
+	z_{min} = - z_{max} 
+$$
+
+
+
+\end{enumerate}
+
+In case we got the boundaries wrong, the following is more appropriate: 
+$r_0$ is the inner boundary, $r_N$ the outer, and $f=1+\epsilon$ the
+geometric factor called {\tt yrat} earlier.
+$$
+r_i = r_{i-1} f, ~~~ i=1..N
+$$
+thus
+$$
+r_N = r_0 f^N
+$$
+and since
+$$
+r_{min} = (r_0+r_1)/2,     ~~~~~ r_{max} = (r_{N-1}+r_N)/2
+$$
+we get
+$$
+r_{min} = r_0 (1+f)/2,   ~~~~~ r_{max} = r_{min} f^{N-1}
+$$
+or
+$$
+r_0 = { 2 \over  { 1+f}}  r_{min}, ~~~~  r_N = r_O f^N
+$$
+
+
+Here are some formulae that we know are correct:
+
+$$
+      r_1 = r_0 + dr, ~~  r_2 = r_1 + dr f  ~~...~~ r_N = r_{N-1} + dr f^{N-1}
+$$
+or following standard summation series (see e.g. G\&R, or Abramowitz)
+$$
+	r_N = r_0 + dr \sum_{k=0}^{N-1}{f^k} = r_0 + dr { {f^N-1} \over { f - 1 }}
+$$
+and
+$$
+     dr =  (r_N - r_0) { {f-1} \over { f^N - 1 }}
+$$
+
+
+
+\section{Output}
+
+For the remainder of the discussion, we will assume all data produced
+by {\tt cmhog} is dumped in a run-directory. 
+Depending on options given to the program, you will find the following files:
+
+\begin{itemize}
+
+\item
+{\tt cmhogin}
+Input namelist, that controls the program.
+
+\item
+{\tt cmhogout}
+Output namelist, not used for anything?
+
+\item
+{\tt history}
+Ascii table with time in the first column, other columns 
+are used for things such as mass loss across the inner and 
+outer boundaries etc.etc.
+
+\item
+{\tt hdfXXXbg}
+Full HDF dataset, in SDS format (Scientific Data Set), typically
+with three named ``fields'': the 
+{\tt R-VELOCITY}, {\tt PHI-VELOCITY}, and {\tt DENSITY-VELOCITY}.
+The NEMO program {\tt tsd} will display the contents of
+such SDS files. Each file contains information for one timestep.
+{\tt hdf000bf} is normally the first one, for $t=0$ at the beginning
+of the simulation.
+
+\item
+{\tt mdeXXXbg}
+Sample X-Y gridded density in a 8bit deep image
+
+\item
+{\tt mvrXXXbg}
+Sample X-Y gridded radial velocity in a 8bit deep image
+
+\item
+{\tt mdvtXXXbg}
+Sample X-Y gridded tangential in a 8bit deep image
+
+\end{itemize}
+
+\section{NEMO programs}
+
+\subsection{runcmhog}
+
+{\tt cmhog} is a program that needs to be run in a clean directory, and you
+cannot run another {\tt cmhog} in that directory. That is because the names
+of files that {\tt cmhog} produces are FIXED by the program, and cannot be
+changed even by the {\tt cmhogin} file (it is also not practical to do that).
+To help running {\tt cmhog}, a small pre-processor was written, called
+{\tt runcmhog}. It is a little C program available in NEMO with which you
+can use a template {\tt cmhogin} file and override parameters and set
+a run directory, e.g.
+
+\begin{verbatim}
+    % runcmhog -n cmhogin.small run001  aob=2.0
+    % runcmhog -n cmhogin.small run002  aob=2.5
+    % runcmhog -n cmhogin.small run003  aob=3.0
+    % runcmhog -n cmhogin.small run004  aob=3.5
+\end{verbatim}
+
+Jianjun Xu (a student of Jim Stone) once write a nice graphical frontend,
+based on Tcl/Tk, to parse and generate cmhogin files. The code still
+exists, but has not been excersized in a long time.
+
+\subsection{tsd}
+
+\footnotesize\begin{verbatim}
+% tsd hdf001bg 
+Found 3 scientific data sets in run001/hdf001bg
+1: R-VELOCITY AT TIME=1.00E-01(20,37) km/sec  -> [740 elements of type: 5 (FLOAT32)]
+2: PHI-VELOCITY AT TIME=1.00E-01(20,37) km/sec  -> [740 elements of type: 5 (FLOAT32)]
+3: DENSITY AT TIME=1.00E-01(20,37) Msolar/pc**2  -> [740 elements of type: 5 (FLOAT32)]
+\end{verbatim}\normalsize
+
+\subsection{sdsfits}
+
+The individual ``fields'' from an {\tt hdfXXXbg} files can be converted to FITS files,
+for visual inspection. Just remember that the first axis is the radial axis, the
+second one the angular.  A ring will thus show up as a vertical structure.
+
+\footnotesize\begin{verbatim}
+% sdsfits hdf001bg map001vr.fits 1
+% sdsfits hdf001bg map001vt.fits 2
+% sdsfits hdf001bg map001de.fits 3
+\end{verbatim}\normalsize
+
+\subsection{hdfgrid}
+
+{\tt hdfgrid}
+\footnote{A good manual page should be available with the man command}
+regrids selected gas properties from our 
+HDF files into a cartesian coordinate system. 
+It is specific to this polar-coordinate problem.
+
+\footnotesize\begin{verbatim}
+% hdfgrid hdf001bg map000de.ccd zvar=den
+% hdfgrid hdf001bg map000vr.ccd zvar=vr
+% hdfgrid hdf001bg map000vt.ccd zvar=vt
+% hdfgrid hdf001bg map000vx.ccd zvar=vx
+% hdfgrid hdf001bg map000vy.ccd zvar=vy
+\end{verbatim}\normalsize
+
+Note that the {\tt vx} and {\tt vy} velocity fields
+are computed on the fly. Nearest neighbor cells are
+used for bi-linear interpolation. Some assumptions
+about the symmetry properties of the variables
+have been made.
+
+\section{flowcode}
+
+Although gas flow in a barred galaxy never reaches an
+exact steady state, it does approach something
+that can perhaps be called a QSSS. However, another approach
+to understand the gas flow is take a particular snapshot, and
+integrate test particles in the velocity field, i.e.
+solve the equations
+$$
+	{dx \over dt } = V_x(x,y)
+$$
+and
+$$
+	{dy \over dt } = V_y(x,y)
+$$
+NEMO's {\tt flowcode} program does that. For this a special
+``vrt'' file (NEMO image format) is needed as input for the
+integrator, consisting
+of two 2D images with VR and VT, followed by two 1D images
+with the coordinates in Radius and Polar Angle (called PHI)
+A ``vrt'' map is created with a script {\tt mkvrt}.
+
+\section{The Program}
+
+Files are .src (fortran source to be pre-processed by cpp) and 
+.inc (for the preprocessor) and .h (standard fortran includes).
+
+\begin{verbatim}
+    main    
+        mstart
+	    setup
+	    grid_generator    (ggen)
+	    problem_generator (galaxy)
+	    nudt
+        dataio
+	
+	solver
+	intchk
+	dataio
+	special
+	nudt
+	
+	dataio
+\end{verbatim}
+
+\end{document}
+
+\footnotesize\begin{verbatim}
+\end{verbatim}\normalsize
+
+
+\begin{verbatim}
+\end{verbatim}

@@ -1,0 +1,11 @@
+This is 'cmhog', revision 2 (cmhog2). A PPM code to simulate the 2D gas
+flow in a barred galaxy. It is based on the code Piner, Stone and Teuben
+published in their 1995 (ApJ xxx,yyy) article.
+
+Although the code stands alone, it is useful to have the MIRIAD, and
+especially, NEMO package around. See hydro.tex in the documentation
+tree for suggestions how to use the code.
+
+April 2002
+Peter Teuben
+
