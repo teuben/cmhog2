@@ -177,7 +177,9 @@ Stop time of the integration (in Gyr)
 {\tt pgrid::pot0}
 A fits file that contains the axisymmetric part of the potential
 on a grid.
-Length units must be kpc.
+Length units must be kpc, and the potential must be defined
+on the whole grid, in particular out
+to a radius of {\tt ggen2::ymax} kpc.
 
 \item
 {\tt pgrid::pot1}

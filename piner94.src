@@ -1,3 +1,4 @@
+#include "cmhog.def"
 C
 C   History:
 C
@@ -30,7 +31,8 @@ c  warning: can only have one 'BLOCK DATA' per program
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
       REAL gomegp,rhalo,vhalo,gamma
-      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
+      COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
+     *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
      *             rhalo,vhalo,gamma
       DATA nx/0/
@@ -49,7 +51,8 @@ C
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
       REAL gomegp,rhalo,vhalo,gamma
-      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
+      COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
+     *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
      *             rhalo,vhalo,gamma
       COMMON/ AREAD/FCMASS,AXIRAT,QUAD,CENDEN,RADLAG, INDEX
@@ -268,7 +271,8 @@ c----------------------------------------------------------------------
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
       REAL gomegp,rhalo,vhalo,gamma
-      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
+      COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
+     *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
      *             rhalo,vhalo,gamma
 

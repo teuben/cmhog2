@@ -7,6 +7,7 @@
 #define MAX_OF_IJK     73
 #define IMG_X          500
 #define IMG_Y          500 
+#define PGMAX         1024
 
 #define RESTART           empty
 #define GRID_GENERATOR    ggen
@@ -14,6 +15,6 @@
 #define R_SOLVER          isoshockquad
 #define SPECIAL           empty
 
-#define NONE undefined(a-z)
+/*  #define NONE undefined(a-z)  */
 #define A_BIG_NUMBER   1.0e+10
 #define A_SMALL_NUMBER 1.0e-10

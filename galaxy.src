@@ -27,7 +27,8 @@ c-----------------------------------------------------------------------
       INTEGER nx,ny
       REAL gpot0,gpot1,gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
       REAL gomega
-      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomega,
+      COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
+     *          grmax,gomega,
      * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2,
      *          grhalo,gvhalo,ggamma
 
@@ -82,7 +83,7 @@ C
 	naxis1 = naxes(1)
 	naxis2 = naxes(2)
 	write(*,*) 'Found image ',naxis1,naxis2
-	call ftg2de(flun,0,0.0,512,naxis1,naxis2,gpot0,anyf,status)
+	call ftg2de(flun,0,0.0,PGMAX,naxis1,naxis2,gpot0,anyf,status)
 	call ftgerr(status,errtxt)
 	call ftgkye(flun,'CRPIX1',crpix1,comment,status)
 	call ftgkye(flun,'CRPIX2',crpix2,comment,status)
@@ -105,15 +106,15 @@ C
 	  call ftgisz(flun, 2, naxes,status)
 	  if (naxis1.ne.naxes(1)) stop
    	  if (naxis2.ne.naxes(2)) stop
-	  call ftg2de(flun,0,0.0,512,naxis1,naxis2,gpot1,anyf,status)
+	  call ftg2de(flun,0,0.0,PGMAX,naxis1,naxis2,gpot1,anyf,status)
 	  call ftgerr(status,errtxt)
 	  call ftclos(flun,status)
 	  call ftgerr(status,errtxt)
 	  write(*,*) 'ftclos pot1: ',status,' ',errtxt
         else
           write(*,*) 'No pot1 - only constant axisymmetric potential'
-	  do 3 k=1,512
-	  do 3 j=1,512
+	  do 3 k=1,PGMAX
+	  do 3 j=1,PGMAX
 		gpot1(j,k) = 0.0
    3	  continue
         endif
