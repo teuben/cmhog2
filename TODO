@@ -5,3 +5,8 @@
 - if no HDF4 libraries found
 
 - /lib/cpp for native sun compiler
+
+- setenv LD_LIBRARY_PATH /local/lib on e.g. astr.dept.
+
+- gnu compiler on e.g. sun needs to use the 
+	cvmgt.src instead of bad SUN macro

@@ -21,6 +21,11 @@ endif
 cd $dir
 echo RUNNING CMHOG BENCHMARK:
 time ../cmhog >& cmhog.log
+if ($status) then
+   echo Problems executing cmhog:
+   cat cmhog.log
+   exit 1
+endif
 
 #  linux run w/ "-g -O2"
 set h1="Data min/max = -123.405 123.341"
