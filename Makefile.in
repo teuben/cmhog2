@@ -56,6 +56,8 @@ PROB   = galaxy
 #       NOTE: gcc3.3 will remove -traditional support......
 # 	will need to use the traditional preprocessor
 #	also check:  -traditional-cpp
+#  -fugly-logint #automatic conversion between logical and int (for cvmgt)
+#  macosx need /usr/bin/cpp for CPP
 CPP    = @CPP@
 CMFLAGS= @CMFLAGS@
 FC     = @F77@
@@ -66,6 +68,12 @@ LDFLAGS= @CFLAGS@
 # LIB notes:
 #  for the intel compiler, add -Vaxlib
 #  for solaris, may also need to add LD_LIBRARY_PATH to environment
+#  for mac os x you need to get HDF of course 
+#  e.g. 
+XHDF_HOME = /sw/lib
+XHDFLIB = $(HDF_HOME)/libmfhdf.a $(HDF_HOME)/libdf.a \
+         $(HDF_HOME)/libjpeg.a  $(HDF_HOME)/libz.1.dylib
+
 CFITSIO = @CFITSIO_LIB@
 LIB    = -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg $(CFITSIO)
 
