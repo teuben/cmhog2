@@ -154,7 +154,8 @@ C
 	write(*,*) 'Nucl tapering: start,scale=',rnstart,rnscale
 	write(*,*) 'Hanning smooth r,t: ',nrh,nth
 #else
-	write(*,*) 'Support for FITSIO was not properly encoded'
+	write(*,*) 'Support for FITSIO was not enabled - '
+	write(*,*) 'You probably should edit cmhog.def and Makefile'
 	STOP
 #endif
 C
