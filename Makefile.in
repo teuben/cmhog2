@@ -65,7 +65,7 @@ LDFLAGS= @CFLAGS@
 # LIB notes:
 #  for the intel compiler, add -Vaxlib
 #  for solaris, may also need to add LD_LIBRARY_PATH to environment
-LIB    = -L/usr/local/lib -L/local/lib -ldf -lcpgplot -lz -ljpeg
+LIB    = -L/usr/local/lib -L/local/lib -ldf -lcfitsio -lz -ljpeg
 
 
 #--------------------  implicit rules  ---------------------------------
