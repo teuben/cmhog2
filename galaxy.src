@@ -12,7 +12,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       integer i,j,k,ndim,npar
       real arg
-      character name*5, fname*80, errtxt*40,comment*80
+      character name*5, pot0*80, pot1*80, errtxt*40,comment*80
       real crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
       real*8 amp,omega,amode,n,aob,qm,rhoc
       real*8 par(8),pos(3),acc(3),pot,dumtime
@@ -20,8 +20,8 @@ c-----------------------------------------------------------------------
       logical anyf
 
       INTEGER nx,ny
-      REAL gpot,gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2,grmax
-      COMMON/ggrid/nx,ny,gpot(512,512),grmax,
+      REAL gpot0,gpot1,gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
+      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,
      * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
 
       external inipotential,potential
@@ -31,13 +31,14 @@ c
 c     assumed that igrav=1 and igeom=1
       namelist /pgen/ amp,npar,amode,n,aob,rl,qm,rhoc,bartime
       namelist /spiral/ spamp,spsc,spang,sppat,sr,pc
-      namelist /pgrid/fname,naxis1,naxis2,
+      namelist /pgrid/pot0,pot1,naxis1,naxis2,rmax,
      *                crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
       omega=0.0
       ndim=3
       npar=7
       name='dummy'
-      fname=' '
+      pot0=' '
+      pot1=' '
       naxis1=0
       naxis2=0
       crval1=0.0
@@ -46,7 +47,7 @@ c     assumed that igrav=1 and igeom=1
       cdelt2=1.0
       crpix1=1.0
       crpix2=1.0
-      rmax = 18.0
+      rmax=0.0
       read (1,pgen)
       write(2,pgen)
       read (1,spiral)
@@ -54,18 +55,19 @@ c     assumed that igrav=1 and igeom=1
       read (1,pgrid)
       write(2,pgrid)
 C
-      if (fname .ne. ' ') then
-	write(*,*) 'Using a grid from an external file: ',fname
+      if (pot0 .ne. ' ') then
+	write(*,*) 'Using a grid from an external file: ',pot0
 	rwmode = 0
 	status = 0
 	call ftgiou(flun,status)
 	call ftgerr(status,errtxt)
-	call ftopen(flun,fname,rwmode,bsize,status)
+
+	call ftopen(flun,pot0,rwmode,bsize,status)
 	call ftgisz(flun, 2, naxes,status)
 	naxis1 = naxes(1)
 	naxis2 = naxes(2)
 	write(*,*) 'Found image ',naxis1,naxis2
-	call ftg2de(flun,0,0.0,512,naxis1,naxis2,gpot,anyf,status)
+	call ftg2de(flun,0,0.0,512,naxis1,naxis2,gpot0,anyf,status)
 	call ftgerr(status,errtxt)
 	call ftgkye(flun,'CRPIX1',crpix1,comment,status)
 	call ftgkye(flun,'CRPIX2',crpix2,comment,status)
@@ -78,6 +80,21 @@ C
 	call ftclos(flun,status)
 	call ftgerr(status,errtxt)
 	write(*,*) 'ftclos: ',status,errtxt
+
+	call ftopen(flun,pot1,rwmode,bsize,status)
+	if (status.eq.0) then
+	  call ftgisz(flun, 2, naxes,status)
+	  if (naxis1.ne.naxes(1)) stop
+   	  if (naxis2.ne.naxes(2)) stop
+	  call ftg2de(flun,0,0.0,512,naxis1,naxis2,gpot1,anyf,status)
+	  call ftgerr(status,errtxt)
+	  call ftclos(flun,status)
+	  call ftgerr(status,errtxt)
+	  write(*,*) 'ftclos: ',status,errtxt
+        else
+          write(*,*) 'No pot1'
+        endif
+
 	nx = naxis1
 	ny = naxis2
 	gcrpix1 = crpix1
@@ -86,10 +103,11 @@ C
 	gcrval2 = crval2
 	gcdelt1 = cdelt1
 	gcdelt2 = cdelt2
-	grmax   = -1.0
+	grmax = 0.0
       else if (naxis1.gt.0 .and. naxis2.gt.0) then
 					
-	write(*,*) 'Using an internal grid; size=',naxis1,naxis2
+	write(*,*) 'Using an internal grid; size=',naxis1,naxis2,
+     *             ' rmax=',rmax
 	nx = naxis1
 	ny = naxis2
 	gcrpix1 = crpix1
@@ -98,7 +116,7 @@ C
 	gcrval2 = crval2
 	gcdelt1 = cdelt1
 	gcdelt2 = cdelt2
-	grmax   = rmax
+	rmax = rmax
       endif
 C
       do 5 i=1,npar

@@ -25,14 +25,11 @@ C=======================================================================
 c  warning: can only have one 'BLOCK DATA' per program
       BLOCK DATA
       INTEGER nx,ny
-      REAL gpot,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,rmax
-      COMMON/ggrid/nx,ny,gpot(512,512),rmax,
+      REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
+      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
-c      DATA nx/512/
-c      DATA ny/512/
       DATA nx/0/
       DATA ny/0/
-      DATA rmax/18.0/
       END
 C=======================================================================
       SUBROUTINE inipotential(npar, par, name)
@@ -45,8 +42,8 @@ C-----------------------------------------------------------------------
 C INITIALIZE THE POTENTIAL AND FORCE CALCULATIONS (after Lias INPOT)
 C
       INTEGER nx,ny
-      REAL gpot,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,rmax
-      COMMON/ggrid/nx,ny,gpot(512,512),rmax,
+      REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
+      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
       COMMON/ AREAD/FCMASS,AXIRAT,QUAD,CENDEN,RADLAG, INDEX
       REAL*8 FCMASS, AXIRAT, QUAD, CENDEN, RADLAG
@@ -76,7 +73,8 @@ C
       REAL*8 CENMAS
       REAL*8 RQ, FMAS, AMAS, DMAS, DDMAS, QQ, AT, AX, AY, AZ
       REAL*8 PIGROC
-	REAL*8 xpos,ypos,pot
+      REAL*8 xpos,ypos,pot
+      REAL   rmax
 C
       REAL*8 PI, FOURPI, GRAVC
       PARAMETER ( PI = 3.141592654, FOURPI = 4. * PI, GRAVC = 4.29569)
@@ -209,7 +207,7 @@ C  POINT AS IN THE HYDRO CODE
       OMEGS = SQRT(QQ)
       par(1) = omegs
 c                                    set up the internal grid if rmax > 0
-	IF (nx.GT.0 .AND. rmax.GT.0) THEN
+	IF (nx.GT.0 .and. grmax.gt.0.0) then
 	   crpix1 = 0.5*(nx+1)
 	   crpix2 = 0.5*(ny+1)
 	   crval1 = 0.0
@@ -223,9 +221,12 @@ c                                    set up the internal grid if rmax > 0
 		 xpos = (ix-crpix1)*cdelt1 + crval1
 		 ypos = (iy-crpix2)*cdelt2 + crval2
 		 CALL PISOB(ypos, xpos, 0.0d0, pot)
-		 gpot(ix,iy) = pot
+		 gpot0(ix,iy) = pot
+		 gpot1(ix,iy) = 0.0
  511	      CONTINUE
  512	   CONTINUE
+	ELSE IF (nx.GT.0) THEN
+	   write(*,*) 'Using an external grid of size ',nx,ny
 	ENDIF
       RETURN
       IF(QUAD.GT.QUADM) THEN
@@ -244,8 +245,8 @@ c----------------------------------------------------------------------
       REAL*8 pos(*), acc(*), pot, time
 
       INTEGER nx,ny
-      REAL gpot,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,rmax
-      COMMON/ggrid/nx,ny,gpot(512,512),rmax,
+      REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
+      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
 
       INTEGER ix,iy
@@ -267,26 +268,26 @@ c----------------------------------------------------------------------
 	 y8=2*y4
 	 ix=ix+1
 	 iy=iy+1
-	 pot = gpot(ix,iy)
-         acc(1) = -( (-2+x4+y3)*gpot(ix-1,iy-1)
-     *              +(  -x8   )*gpot(ix  ,iy-1)
-     *              +( 2+x4-y3)*gpot(ix+1,iy-1)
-     *              +(-2+x4   )*gpot(ix-1,iy)
-     *              +(  -x8   )*gpot(ix  ,iy)
-     *              +( 2+x4   )*gpot(ix+1,iy)
-     *              +(-2+x4-y3)*gpot(ix-1,iy+1)
-     *              +(  -x8   )*gpot(ix  ,iy+1)
-     *              +( 2+x4+y3)*gpot(ix+1,iy+1) )/(12.0*cdelt1);
+	 pot = gpot0(ix,iy)
+         acc(1) = -( (-2+x4+y3)*gpot0(ix-1,iy-1)
+     *              +(  -x8   )*gpot0(ix  ,iy-1)
+     *              +( 2+x4-y3)*gpot0(ix+1,iy-1)
+     *              +(-2+x4   )*gpot0(ix-1,iy)
+     *              +(  -x8   )*gpot0(ix  ,iy)
+     *              +( 2+x4   )*gpot0(ix+1,iy)
+     *              +(-2+x4-y3)*gpot0(ix-1,iy+1)
+     *              +(  -x8   )*gpot0(ix  ,iy+1)
+     *              +( 2+x4+y3)*gpot0(ix+1,iy+1) )/(12.0*cdelt1);
 
-	 acc(2) = -( (-2+x3+y4)*gpot(ix-1,iy-1)
-     *              +(-2   +y4)*gpot(ix  ,iy-1)
-     *              +(-2-x3+y4)*gpot(ix+1,iy-1)
-     *              +(     -y8)*gpot(ix-1,iy)
-     *              +(     -y8)*gpot(ix  ,iy)
-     *              +(     -y8)*gpot(ix+1,iy)
-     *              +( 2-x3+y4)*gpot(ix-1,iy+1)
-     *              +( 2   +y4)*gpot(ix  ,iy+1)
-     *              +( 2+x3+y4)*gpot(ix+1,iy+1) )/(12.0*cdelt2);
+	 acc(2) = -( (-2+x3+y4)*gpot0(ix-1,iy-1)
+     *              +(-2   +y4)*gpot0(ix  ,iy-1)
+     *              +(-2-x3+y4)*gpot0(ix+1,iy-1)
+     *              +(     -y8)*gpot0(ix-1,iy)
+     *              +(     -y8)*gpot0(ix  ,iy)
+     *              +(     -y8)*gpot0(ix+1,iy)
+     *              +( 2-x3+y4)*gpot0(ix-1,iy+1)
+     *              +( 2   +y4)*gpot0(ix  ,iy+1)
+     *              +( 2+x3+y4)*gpot0(ix+1,iy+1) )/(12.0*cdelt2);
 c	 write(*,*) 'grid: ',pos(1),pos(2),pot,acc(1),acc(2)
 c	 write(*,*) ' c  : ',ix,iy,x,y
 c        write(*,*) ' d  : ',dx,dy,x3,x4,x8,y3,y4,y8
