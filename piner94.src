@@ -85,7 +85,6 @@ C
       REAL*8 RQ, FMAS, AMAS, DMAS, DDMAS, QQ, AT, AX, AY, AZ
       REAL*8 PIGROC
       REAL*8 xpos,ypos,rpos,pot,taper
-      REAL   rmax
 C
       REAL*8 PI, FOURPI, GRAVC
       PARAMETER ( PI = 3.141592654, FOURPI = 4. * PI, GRAVC = 4.29569)
@@ -224,8 +223,8 @@ c 	            can also choose a pattern speed overriding pgen::rl value
 	   crpix2 = 0.5*(ny+1)
 	   crval1 = 0.0
 	   crval2 = 0.0
-	   cdelt1 = 2.0*rmax/(nx-1)
-	   cdelt2 = 2.0*rmax/(ny-1)
+	   cdelt1 = 2.0*grmax/(nx-1)
+	   cdelt2 = 2.0*grmax/(ny-1)
 	   write(*,*) 'Internal grid: crpix,crval,cdelt:', 
      *                crpix1,crval1,cdelt1
 	   DO 511 iy=1,ny
