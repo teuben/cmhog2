@@ -71,8 +71,13 @@ LDFLAGS= @CFLAGS@
 #  for mac os x you need to get HDF of course 
 #  e.g. 
 XHDF_HOME = /sw/lib
+# Eve's laptop
 XHDFLIB = $(HDF_HOME)/libmfhdf.a $(HDF_HOME)/libdf.a \
          $(HDF_HOME)/libjpeg.a  $(HDF_HOME)/libz.1.dylib
+# Peter's braindead finked machine
+# also needed CC=/usr/bin/gcc FC=/sw/bin/g77, go figure
+# else two undefined variables are left....   xxxxFP
+YHDFLIB = $(HDF_HOME)/libdf.a $(HDF_HOME)/libjpeg.62.dylib  /usr/lib/libz.1.dylib
 
 CFITSIO = @CFITSIO_LIB@
 LIB    = -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg $(CFITSIO)
