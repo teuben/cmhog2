@@ -811,6 +811,76 @@ The following are the standard ``potpars'' parameters to this potential.
   
 \end{verbatim}
 
+\subsection{Potentials on a grid}
+
+In the fall of 2002 the {\tt cmhog} code was modified to handle potentials
+on a grid. Two additive potentials, as FITS files, can be given in the
+(new) {\bf pgrid} directive in the {\tt cmhogin} file. The coordinate
+system in the FITS file, as defined by the CRVAL/CRPIX/CDELT keywords
+in the FITS header, must be linear and in KPC (typically covering -16 to
+16 kpc or so, but perhaps a little more to handle the edges). 
+
+The following shell snippet shows how to create a potential:
+
+
+\begin{verbatim}
+
+% potccd grid0 athan92 0,1,1,2.5,6.5,0,24000 x=-17.5:17.5:0.07 y=-17.5:17.5:0.07 omega=0
+% ccdfits grid0 grid0.fits 
+% fitshead grid0.fits
+
+SIMPLE  =                    T /
+BITPIX  =                  -32 /
+NAXIS   =                    3 /
+NAXIS1  =                  501 /
+NAXIS2  =                  501 /
+NAXIS3  =                    1 /
+COMMENT  FITS (Flexible Image Transport System) format is defined in 'Astronomy
+COMMENT  and Astrophysics', volume 376, page 359; bibcode: 2001A&A...376..359H
+CRPIX1  =      1.000000000E+00 /
+CRPIX2  =      1.000000000E+00 /
+CRPIX3  =      1.000000000E+00 /
+CRVAL1  =     -1.750000000E+01 /
+CRVAL2  =     -1.750000000E+01 /
+CRVAL3  =      0.000000000E+00 /
+CDELT1  =      7.000000030E-02 /
+CDELT2  =      7.000000030E-02 /
+CDELT3  =      0.000000000E+00 /
+CTYPE1  = 'X       '           /
+CTYPE2  = 'Y       '           /
+CTYPE3  = 'Z       '           /
+DATAMIN =     -2.563205781E+05 /
+DATAMAX =     -4.864591797E+04 /
+ORIGIN  = 'NEMO    '           /
+AUTHOR  = 'teuben  '           /
+OBJECT  = '        '           /
+COMMENT
+HISTORY  NEMO: History in reversed order
+HISTORY  ccdfits grid0 grid0.fits VERSION=5.0
+HISTORY  potccd grid0 athan92 0,1,1,2.5,6.5,0,24000 x=-17.5:17.5:0.07 y=-17.5:1
+         7.5:0.07 omega=0 VERSION=1.4
+END
+
+
+
+
+======================  TO DO : : : ========================
+
+- define pattern speed, currently it's inherited from 'rl' in 'pgen' (see cmhogin)
+   $pgen rl=6.0 $
+
+- pot1 is not working yet, so only axisymetric potentials work
+
+
+
+\end{verbatim}
+
+
+
+
+
+
+
 \section{Installation}
 
 The best way to obtain {\tt cmhog} is via 
@@ -830,6 +900,10 @@ for more details on CVS usage}:
 NOTES:
 	does not compile with gcc-3.0 ???
 \end{verbatim}
+
+If compilation fails, e.g. due to the FITSIO interface, you may also manually need to edit
+the Makefile to the correct path of where FITSIO (normally libcfitsio.a ) is located.
+
 
 \newpage
 \subsection{Benchmark}
