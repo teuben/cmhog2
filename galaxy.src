@@ -134,6 +134,8 @@ C
 	gvhalo = vhalo
 	grhalo = rhalo
 	ggamma = gamma
+        grtstart = rtstart
+        grtscale = rtscale
 	write(*,*) 'Pattern speed omega = ',omega
 	write(*,*) 'Halo: vhalo,rhalo= ',vhalo,rhalo
 	write(*,*) 'Disk: gamma= ',gamma
