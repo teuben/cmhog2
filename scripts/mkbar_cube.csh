@@ -32,10 +32,22 @@
 #               (bugs when model and data have different delta-V)
 #  10-apr-02    more generic version without a reference cube
 #   6-jul-02    added back reference cube code with lots of changes, added inden= keyword
+#   7-nov-02    stick in the cmhog2/scripts
+#   8-nov-02    add more scaling parameters
+
+set version=7-nov-02
 
 if ($#argv == 0) then
   echo Usage: $0 in=HDF_DATASET out=BASENAME ...
+  echo Version: $version
   echo Gridding and projecting 2D CMHOG hydro models to specified bar viewing angles
+  echo Optional parameters:  
+  echo "   pa, inc, phi, rot (1=ccw)"
+  echo "   rmax, n, beam, color, clean, cube, denlog"
+  echo "   nvel, vmax"
+  echo "   wcs, refmap, pscale, vscale, vsys"
+  echo "   par, inden"
+  echo "You also need the NEMO environment"
   exit 0
 endif
 
@@ -66,6 +78,10 @@ set refmap=""
 set pscale=1
 set vscale=1
 set vsys=0
+
+#                       extra scaling for hydro data into the snapshot (usefull if no wcs)
+set hpscale=1
+set hvscale=1
 
 
 #
@@ -197,8 +213,9 @@ if (! -e $out.den.fits) then
 
     # project for skyview, and create a intensity and velocity field
 
-    snaprotate $tmp.s3 $tmp.snap \
-        "atand(tand($phi)/cosd($inc)),$inc,$pa" zyz
+    snaprotate $tmp.s3 - \
+        "atand(tand($phi)/cosd($inc)),$inc,$pa" zyz |\
+	snapscale - $tmp.snap rscale=$hpscale vscale=$hvscale
 
     echo -n "Projected model velocities:"
     snapprint $tmp.snap -vz | tabhist - tab=t |& grep min
