@@ -7,6 +7,7 @@ set m=10
 set out=junk
 set frame=1:1000
 set var=den
+set format=%04d
 
 foreach _arg ($*)
    set $_arg
@@ -20,12 +21,12 @@ set r=-${m}:$m
 
 rm -f junk*.fits
 
-foreach i (`nemoinp $frame format=%03d`)
+foreach i (`nemoinp $frame format=$format`)
   #  stop when no more frames found
   if (! -e hdf{$i}bg) break
   echo $i
   @ n++
-  set nnn=`nemoinp $n format=%03d`
+  set nnn=`nemoinp $n format=$format`
   set in=hdf${i}bg
   set out=junk$nnn.fits
   if ($polar) then
@@ -37,4 +38,4 @@ foreach i (`nemoinp $frame format=%03d`)
 end
 
 #  glue them together into a giant
-fitsglue junk%03d.fits junk_cube.fits inlist=1:$n
+fitsglue junk$format.fits junk_cube.fits inlist=1:$n
