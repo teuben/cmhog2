@@ -24,7 +24,6 @@ if test -n "$F77"; then
   if test -n "$GCC"; then
     AC_F77_LIBRARY_LDFLAGS
     ACX_F77_FUNC_MANGLE
-    AC_CANONICAL_HOST
     case $host_os in
       ultrix*)
         CC="$CC -Dmain=MAIN_"
@@ -43,8 +42,14 @@ else
   AC_MSG_WARN(no FORTRAN compiler)
 fi
 
+dnl fix up CPP when GCC is the compiler
+dnl should also use gcc if e.g. intel of pgi compiler is used ???
+if test -n "$GCC"; then
+  CPP="$CPP -traditional"
+fi
 
 dnl Check for system name
+dnl bug: on solaris with gcc compiler, -DSUN will cause the cvgmt() procedure to fail
 
 case $host_os in
       solaris*)
