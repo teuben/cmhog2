@@ -1,6 +1,6 @@
  $rescon  $
  $hycon idiff=1,ifltn=1,tlim=2.0 $
- $ggen2 nbl=37,ymin=0.1,ymax=16.0,yrat=1.07854,igrid=1,lgrid=.true. $
+ $ggen2 nbl=37,ymin=0.1,ymax=16.0,yrat=1.15708,igrid=1,lgrid=.true. $
  $ggen3 nbl=20,zmin=-1.5708,zmax=1.5708,igrid=1,lgrid=.true. $
  $ijb $
  $ojb $
