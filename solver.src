@@ -1,0 +1,107 @@
+#include "cmhog.def"
+c=======================================================================
+c/////////////////////////  SUBROUTINE SOLVER  \\\\\\\\\\\\\\\\\\\\\\\\\
+c
+      subroutine solver
+c
+c  PERFORMS PPM UPDATE FOR ONE TIMESTEP
+c   MODIFIED VERSION FOR ADVECTION TESTS
+c
+c  written by: Jim Stone
+c  date:       January, 1991
+c  modified1:
+c
+c  PURPOSE:  Advances the fluid equations by one timestep using the
+c    Lagrange plus remap PPM algorithm in 3-D.
+c
+c  LOCALS:
+c-----------------------------------------------------------------------
+#include "param.h"
+#include "grid.h"
+#include "field.h"
+#include "root.h"
+#include "scratch.h"
+c-----------------------------------------------------------------------
+      integer j,k,ixyz,n
+      real  dl(jn,kn), dr(jn,kn) 
+     &     ,pb(jn,kn)
+     &     ,vl(jn,kn), vr(jn,kn), vb(jn,kn)
+     &     ,wl(jn,kn), wr(jn,kn), wb(jn,kn)
+      equivalence (dl,wijk0),(dr,wijk1)
+     &           ,(vl,wl,pb,wijk4),(vr,wr,vb,wb,wijk5)
+c
+      real  df(jn,kn)
+     &     ,vf(jn,kn), wf(jn,kn)
+      equivalence (df,wijk0)
+     &           ,(vf,wijk3),(wf,wijk4)
+c
+      external yintlgrg, ylgrg, yintrmp, yremap
+     &        ,zintlgrg, zlgrg, zintrmp, zremap, R_SOLVER
+     &        ,bvaldyeul, bvaldylag, bvalvy, bvalwy
+     &        ,bvaldz, bvalvz, bvalwz
+c\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\////////////////////////////////
+c=======================================================================
+c
+      ixyz = mod(nhy,2)
+      do 130 n=ixyz,ixyz+1
+c
+c  Update in y-direction
+c
+      if (mod(n,2) .eq. 0 .and. nyz .gt. 1) then
+        call bvaldyeul
+        call bvalvy
+c        call bvalwy
+	do 45 k=ks,ke
+	do 45 j=js-3,js-1
+          w(j,k)=w(js,k)+((w(js,k)-w(js+1,k))
+     &		   *(radius(js)-radius(j))/(radius(js+1)-radius(js)))
+45      continue
+	do 46 k=ks,ke
+	do 46 j=je+1,je+3
+          w(j,k)=w(je,k)+((w(je,k)-w(je-1,k))
+     &		   *(radius(je)-radius(j))/(radius(je-1)-radius(je)))
+46      continue
+        call yintlgrg          (d,v,w,  dy,dl,dr,vl,vr)
+        call R_SOLVER (js,je+1,ks,ke,    dl,dr,vl,vr,pb,vb)
+	do 50 k=ks,ke
+	  vb(js,k)=min(vb(js,k),0.0)
+50      continue
+        call ylgrg             (d,  v,w,                     pb,vb)
+c
+        call bvaldylag
+        call bvalvy
+c        call bvalwy
+	do 55 k=ks,ke
+	do 55 j=js-3,js-1
+          w(j,k)=w(js,k)+((w(js,k)-w(js+1,k))
+     &		   *(radius(js)-radius(j))/(radius(js+1)-radius(js)))
+55      continue
+	do 56 k=ks,ke
+	do 56 j=je+1,je+3
+          w(j,k)=w(je,k)+((w(je,k)-w(je-1,k))
+     &		   *(radius(je)-radius(j))/(radius(je-1)-radius(je)))
+56      continue
+        call yintrmp(d,v,w,dyn,df,vf,wf)
+        call yremap (d,v,w,    df,vf,wf)
+      endif
+c
+c  Update in z-direction
+c
+      if (mod(n,2) .eq. 1 .and. nzz .gt. 1) then
+        call bvaldz
+        call bvalwz
+	call bvalvz
+        call zintlgrg          (d,  v,w,dz,dl,dr,wl,wr)
+        call R_SOLVER (js,je,ks,ke+1,    dl,dr,wl,wr,pb,wb)
+        call zlgrg             (d,  v,w,                     pb,wb)
+c
+        call bvaldz
+        call bvalvz
+        call bvalwz
+        call zintrmp(d,v,w,dzn,df,vf,wf)
+        call zremap (d,v,w,    df,vf,wf)
+      endif
+130   continue
+c
+      return
+      end
