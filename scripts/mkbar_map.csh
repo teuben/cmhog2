@@ -27,8 +27,9 @@
 #   9-may-03  1.4 Derived from mkbar_cube.csh with better WCS and refmap
 #     sep-03  1.5 added documentation
 #  10-nov-04  1.6 merged two seemingly different versions where a $ring file was added
+#  14-nov-04  1.7 optional map renormalization for more proper chi2 computation
 
-set version=10-nov-04
+set version=15-nov-04
 
 if ($#argv == 0) then
   echo Usage: $0 in=HDF_DATASET out=BASENAME refmap=FITSFILE...
@@ -71,6 +72,11 @@ set vsys=0
 #                       extra scaling for hydro data into the snapshot (usefull if no wcs)
 set hpscale=1
 set hvscale=1
+
+#                       optional sigma scaling (set to 1 if none) of velocity difference map
+set sigma=5
+set npar=1
+set nppb=1
 
 
 #
@@ -214,12 +220,12 @@ if (! -e $out.den.fits) then
         object=$in comment="$comment" $wcspars 
     if ($?ring) then
      if (-e $ring) then
-      fitsccd $refmap - | ccdmath -,$tmp.vel,$ring $tmp.diff 'ifeq(%1,0,0,ifeq(%2,0,0,%1-%2))*%3' 
+      fitsccd $refmap - | ccdmath -,$tmp.vel,$ring $tmp.diff "ifeq(%1,0,0,ifeq(%2,0,0,%1-%2))*%3/$sigma"
      else
-      fitsccd $refmap - | ccdmath -,$tmp.vel $tmp.diff 'ifeq(%1,0,0,ifeq(%2,0,0,%1-%2))' 
+      fitsccd $refmap - | ccdmath -,$tmp.vel $tmp.diff "ifeq(%1,0,0,ifeq(%2,0,0,%1-%2))/$sigma"
      endif
     endif
-    ccdstat $tmp.diff bad=0
+    ccdstat $tmp.diff bad=0 npar=$npar nppb=$nppb
     # ccdstat $tmp.diff bad=0 win=$weight
     # ccdstat $tmp.diff
     # ccdmath $tmp.diff - 'ifeq(%1,0,-99999,%1)' | ccdstat -  min=-1000 max=1000
