@@ -7,6 +7,8 @@ c   by NEMO), or via up to two grid (FITS) files defining the
 c   axisymmetric and  non-axisymmetric parts of the potential
 c   on an X-Y grid.
 c
+c
+c
       subroutine galaxy
 c
 c-----------------------------------------------------------------------
@@ -41,7 +43,8 @@ c     assumed that igrav=1 and igeom=1
       namelist /spiral/ spamp,spsc,spang,sppat,sr,pc
       namelist /pgrid/pot0,pot1,naxis1,naxis2,rmax,omega,gamma,
      *                crval1,crval2,crpix1,crpix2,cdelt1,cdelt2,
-     *                rhalo,vhalo,rtstart,rtscale,rnstart,rnscale
+     *                rhalo,vhalo,rtstart,rtscale,rnstart,rnscale,
+     *                nrh,nth
       ndim=3
       npar=7
       name='dummy'
@@ -64,6 +67,8 @@ c     assumed that igrav=1 and igeom=1
       rtscale=1000.0
       rnstart=-1000.0
       rnscale=1000.0
+      nrh=0
+      nth=0
       read (1,pgen)
       write(2,pgen)
       read (1,spiral)
@@ -147,6 +152,7 @@ C
 	write(*,*) 'Disk: gamma= ',gamma
 	write(*,*) 'Edge tapering: start,scale=',rtstart,rtscale
 	write(*,*) 'Nucl tapering: start,scale=',rnstart,rnscale
+	write(*,*) 'Hanning smooth r,t: ',nrh,nth
 #else
 	write(*,*) 'Support for FITSIO was not properly encoded'
 	STOP
@@ -196,6 +202,9 @@ c        print out the grid values, both center and edges
 
       endif
 
+c   	first set par(6) = 0, i.e. determine the radial (Y) forces 
+c 	when no bar is present.
+
       call inipotential(npar,par,name)
 C   
       if (nyz.gt.1) then
@@ -227,6 +236,9 @@ C
 7       continue
       endif
 c
+c   	second, set par(6) = qm, i.e. determine the radial (Y) and
+c	tangential (Z) forces when a bar is present.
+
       par(6)=qm
       call inipotential(npar,par,name)
 c
@@ -309,17 +321,6 @@ c            spzed(j,k)=spzed(j,k)*exp(16.0-radius(j))
 c            spzcen(j,k)=spzcen(j,k)*exp(16.0-radius(j))
 c          endif
 10     continue
-
-       if (radius(j).lt.rnstart) 
-     &   call taper(barzed,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
-       if (radius(j).lt.rnstart) 
-     &   call taper(barzcen,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
-
-       if (radius(j).gt.rtstart) 
-     &   call taper(barzed,jn,j,ks-1,ke+1,radius(j),rtstart,rtscale)
-       if (radius(j).gt.rtstart) 
-     &   call taper(barzcen,jn,j,ks-1,ke+1,radius(j),rtstart,rtscale)
-
 11    continue
       endif
 c
