@@ -367,9 +367,9 @@ second axis is the angular coordinate, and will be regularly samples
 
 \begin{figure}[htbp]
 \centering
-\subfigure[width=2.2in]{\includegraphics[width=2.2in]{denrt.ps}}
+\subfigure[Polar coordinates]{\includegraphics[width=2.2in]{denrt.ps}}
 \hspace{0in}
-\subfigure[width=2.2in]{\includegraphics[width=2.2in]{denxy.ps}}
+\subfigure[Cartesian coordinates]{\includegraphics[width=2.2in]{denxy.ps}}
 \caption{
 Logarithmic density in polar coordinates:\newline
   \tt \% sdsfits hdf200bg mapd.fits 3\newline
@@ -443,6 +443,31 @@ integrator, consisting
 of two 2D images with VR and VT, followed by two 1D images
 with the coordinates in Radius and Polar Angle (called PHI)
 A ``vrt'' map is created with a script {\tt mkvrt}.
+
+\begin{verbatim}
+In NEMO you will have to compile flowcode, e.g.
+
+	mknemo flowcode
+
+but also the .so files:
+
+	cd $NEMO/src/nbody/evolve/flowcode
+	make vrt.so vrtd.so
+	cp *.so $NEMOOBJ/potential
+		(sorry, no make target yet....)
+	
+
+The so-called ``vrt'' and ``vrtd'' files are to be made from HDF files,
+with the script mkvrt and mkvrtd that didn't come with flowcode yet
+...(catch-22)..
+
+Here is an example of use: the initial conditions is gas flow on
+circular orbits, so we'll integrate the flow and see if they remain
+on circular orbits:
+
+	mkvrt hdf000bg test000.vrt
+
+\end{verbatim}
 
 \subsection{NEMO scripts: mkbar}
 
@@ -560,6 +585,7 @@ an observation.
 #		center of the galaxy (bimasong data often don't do the VELO axis correct)
 #  17-apr-01    added velocity referencing using 'vsys' to be at v=0 in the model cube
 #               (bugs when model and data have different delta-V)
+#  11-apr-02    generic version with new geometry definitions
 
 if ($#argv == 0) then
   echo Usage: $0 in=HDF_DATASET out=BASENAME ...
@@ -571,15 +597,18 @@ endif
 unset in
 unset out
 # 			Defaulted Keywords
-set pa=0
-set inc=0
-set phi=0
+set pa=-42
+set inc=27
+set phi=44
+set rot=1
+#
 set rmax=6
 set n=200
 set beam=0.05
 set color=1
 set clean=1
-set refmap=n4303cube.fits
+#
+set refmap=""
 set pscale=0.5
 set vscale=1
 set vsys=0
@@ -587,10 +616,32 @@ set vsys=0
 set nvel=50
 set vmax=250
 
-#			Parse commandline to (re)set keywords
+set par=""
+
+#			Parse commandline to (re)set keywords, special case for par=
 foreach a ($*)
   set $a
+  if (-e "$par") then
+    source $par
+    set par=""
+  else
+    echo Warning, par=$par does not exist
+    set par=""
+  endif
 end
+
+#
+#  fix inc/pa for ccw(rot=1) or cw(rot=-1) cases for NEMO's euler angles
+#
+if ($rot == -1) then
+   set inc=$inc+180
+else if ($rot == 1) then
+   set pa=$pa+180
+else
+   echo "Bad rotation, must be 1 (ccw) or -1 (cw)"
+   exit 1
+endif
+
 #			Show i'm happy
 echo Files: in=$in out=$out 
 echo Grid: rmax=$rmax n=$n beam=$beam
@@ -600,33 +651,36 @@ set cell=`nemoinp "2*$rmax/$n"`
 set range="-${rmax}:${rmax}"
 echo "      Derived: cell=$cell"
 
+if (-e "$refmap") then
+    #   referencing 
+    set nz=(`fitshead $refmap | grep ^NAXIS3 | awk '{print $3}'`)
+    set pz=(`fitshead $refmap | grep ^CRPIX3 | awk '{print $3}'`)
+    set vz=(`fitshead $refmap | grep ^CRVAL3 | awk '{print $3}'`)
+    set dz=(`fitshead $refmap | grep ^CDELT3 | awk '{print $3}'`)
+    
+    set dz1=`nemoinp "2000*$vmax/$nz"`
+    set vref=`nemoinp "($vz-1000*$vsys)/($dz1)+$nvel/2+0.5"`
+    #set vscale=`nemoinp "$vscale*(2*$vmax/$nvel)/($dz/1000)"`
+    set refscale=$pscale,$pscale,$vscale
+    #                                    CHECK : is this -0.5 or +0.5   ?????
+    set refcen=`nemoinp $n/2-0.5`
+    #set refpix=$refcen,$refcen,$vref
 
-#   referencing 
-set nz=(`fitshead $refmap | grep ^NAXIS3 | awk '{print $3}'`)
-set pz=(`fitshead $refmap | grep ^CRPIX3 | awk '{print $3}'`)
-set vz=(`fitshead $refmap | grep ^CRVAL3 | awk '{print $3}'`)
-set dz=(`fitshead $refmap | grep ^CDELT3 | awk '{print $3}'`)
-
-set dz1=`nemoinp "2000*$vmax/$nz"`
-set vref=`nemoinp "($vz-1000*$vsys)/($dz1)+$nvel/2+0.5"`
-#set vscale=`nemoinp "$vscale*(2*$vmax/$nvel)/($dz/1000)"`
-set refscale=$pscale,$pscale,$vscale
-#                                    CHECK : is this -0.5 or +0.5   ?????
-set refcen=`nemoinp $n/2-0.5`
-#set refpix=$refcen,$refcen,$vref
-
-
-#   now assuming model is centered, as well as data cube
-set vref=`nemoinp $nvel/2+0.5`
-###set vref=`nemoinp $nvel/2-0.5`
-set refpix=$refcen,$refcen,$vref
-
-
-echo $nz $pz $vz $dz 
-echo Vsys at OBS pixel: `nemoinp "(1000*$vsys-$vz)/$dz+$pz"` 
-echo REFPIX:   $refpix
-echo REFSCALE: $refscale
-
+    
+    #   now assuming model is centered, as well as data cube
+    set vref=`nemoinp $nvel/2+0.5`
+    ###set vref=`nemoinp $nvel/2-0.5`
+    set refpix=$refcen,$refcen,$vref
+    
+    
+    echo $nz $pz $vz $dz 
+    echo Vsys at OBS pixel: `nemoinp "(1000*$vsys-$vz)/$dz+$pz"` 
+    echo REFPIX:   $refpix
+    echo REFSCALE: $refscale
+else
+    echo BUG: need to rewrite this section for when no refmap given..... since you did not
+    exit 1
+endif    
 
 #> nemo.need tabtos snaptrans snaprotate snapadd snapgrid ccdsmooth ccdmath ccdfits fitshead
 
@@ -685,10 +739,15 @@ if (! -e $out.den.fits) then
 else
     echo Warning: skipping gridding and projecting
 endif
+
 exit 0
 
 cleanup:
     if ($clean) rm $tmp.*
+
+
+
+
 
 \end{verbatim}\normalsize
 
@@ -698,6 +757,9 @@ cleanup:
 
 Files are .src (fortran source to be pre-processed by cpp) and 
 .inc (for the preprocessor) and .h (standard fortran includes).
+On some operating systems (e.g. GNU/linux) the use of
+{\tt cpp} as a pre-processor meant that single quotes could 
+not be used in fortran comments.
 
 \begin{verbatim}
     main    
@@ -716,6 +778,20 @@ Files are .src (fortran source to be pre-processed by cpp) and
 	
 	dataio
 \end{verbatim}
+
+\subsection{Potential}
+
+The potential and forcefield are defined through two subroutines
+named {\tt inipotential} and {\tt potential}. They follow the
+standard way how potentials are coded in the NEMO environment,
+with the advantage that a variety of NEMO programs are now 
+acccessible to investigate such potentials. Within NEMO potentials
+can be written in either Fortran or C, although in order for
+{\tt cmhog} to make use of them, any C version would need the
+usual interface layer between Fortran and C. The standard distribution
+of the bar hydro project of {\tt cmhog} implements the potential
+in {\tt piner94.src}, which is (or should be) identical to the
+one in {\tt \$NEMO/src/orbit/potential/data/piner94.f}.
 
 \section{Installation}
 
@@ -748,11 +824,15 @@ The results for a few popular machines are summarized
 in Table 1.
 
 \begin{table}[htbp]
-\caption[{\tt cmhog} code benchmarks]{{\tt cmhog} code benchmarks}
 \centering
 \medskip
+\caption{{\tt cmhog} code benchmarks}
 \begin{tabular}{|l|r|r|r|r|l|} \hline
-Machine      & MHz  	      & cpu(sec) & cpu/GHz & K-zcs & compiler/options \\ 
+Machine & MHz  	      
+	& cpu(sec) 
+	& cpu/GHz 
+	& K-zcs\footnote{Kilo zone-cycle per second, computed as 4416.65/cpu(sec)}
+	& compiler/options \\ 
 &&&&&  \\ \hline
 P-IV/512	& 2200	&	 26.3 & 57.8  &  76.4 & g77 -g -O2 \\  % peto
                 &       &        20.6 & 45.3  &  97.5 & ifc -O \\
@@ -766,11 +846,13 @@ P-III		& 700   &	 75.2 & 52.6  &  84.0 & \\ % akash
 P-III/512 Katmai & 600	&	 88.7 & 53.2  &  83.0 &  \\ % mensa
 P-III		& 600	&	 91.1 & 54.7  &  80.7 & (laptop) \\ % laptop
  		& 	&	 65.0 & 39.0  & 113.2 & ifc -O \\
+		&	&	 70.8 &       &       & pgf77 -O (version 3.2) \\
 		&	&	 93.6 & 56.2  &  78.6 & ifc -O compiled on Piv \\
 P-III/512 Katmai & 500  &	106.5 & 53.3  &  82.9 & \\  % xeon (P500 at home)
 P-II/MMX        & 233   &       321.0 & 74.8  &  13.7 & g77 -g -O2 \\ % peter(P233MMX at home)
 		&	&	321.6 & 74.9  &  13.7 & ifc -O \\
 P-I             & 166   &       496.1 & 82.4  &   8.9 & g77 -g -O2 \\ % saturn
+\hline
 Alpha EV67	& 666   &        42.7 & 28.4  & 155.5 & g77/gcc \\ % numenor
 		&       &        23.8 & 15.8  & 279.5 & fort/ccc -fast \\
 Ultra-SPARC-IIi &  440  &	   -  &   -   &       & g77 -g -O2\\   % venus
@@ -780,6 +862,7 @@ Ultra-SPARC     &  167  &       128.0 & 21.4  & 206.4 & f77 -fast \\
  \hline
 \end{tabular}
 \end{table}
+%% \end{minipage}
 
 %  full tests on P2200:
 %  20 80.3
