@@ -202,16 +202,17 @@ Background (softened isothermal) halo potential core radius.
 \item
 {\tt pgrid/gamma}
 Scaling factor for the grid potential. This acts like an M/L factor,
-but is only used when a halo (vhalo>0) is used.
+but is only used when a halo (vhalo$>$0) is used.
 Once the halo is added  this 
 gamma factor can be used to determine the amount of the
 disk contribution w.r.t. maximum disk.
 
 \item
-{\tt pgrid/nx ,pgrid/ny}
+{\tt pgrid/naxis1 ,pgrid/naxis2, pgrid/rmax}
 Setting only these will generate an internal grid, instead of the
 external grid on pot0/pot1. It's really a cheat and meant for 
-debugging potentials.
+debugging potentials. {\tt rmax} is also needed, and defines the maximum
+extent of the grid in X and Y.
 
 \item
 {\tt pgrid/rtstart,pgrid/rtscale}
@@ -219,6 +220,17 @@ The starting radius, and scale-length (in kpc) where an
 exponential taper is applied to the non-axysymmetric part
 of the potential. Normally the defaults are such (1000,1000)
 that a taper is not applied.
+
+\item
+{\tt pgrid/rnstart,pgrid/rnscale}
+The starting radius, and scale-length (in kpc) within which 
+a nuclear tapering is applied. This is needed to ensure that
+near the center the potential is sufficiently axisymmetric
+to prevent gas flow to concentrate on the center, and not
+some point slightly off-centered. This can often occur for
+grid potentials derived from observations. Normally the defaults
+are such (-1000,1000) that a taper is not applied.
+
 
 \end{itemize}
 
@@ -399,7 +411,7 @@ with three named ``fields'': the
 {\tt R-VELOCITY}, {\tt PHI-VELOCITY}, and {\tt DENSITY}.
 The NEMO program {\tt tsd} will display the contents of
 such SDS files. Each file contains information for one timestep.
-{\tt hdf000bf} is normally the first one, for $t=0$ at the beginning
+{\tt hdf0000bf} is normally the first one, for $t=0$ at the beginning
 of the simulation.
 \newline
 {\bf NOTE:} Existing dataset will get their new SDS's appended to
@@ -434,11 +446,11 @@ values, index 1 are the radial values, and those are repeated in 3,4 and
 use -h instead of -d on sets 0 and 1 to get the header (not the data) and
 grep for the 'Size =' line.  Not all that pretty but it all works!
 \begin{verbatim}
-  % hdp dumpsds -i 0 -d hdf001bg                 # PHI (vector)
-  % hdp dumpsds -i 1 -d hdf001bg                 # R (vector)
-  % hdp dumpsds -i 2 -d hdf001bg                 # R-velocity (matrix)
-  % hdp dumpsds -i 5 -d hdf001bg                 # PHI-velocity (matrix)
-  % hdp dumpsds -i 8 -d hdf001bg                 # DENSITY (matrix)
+  % hdp dumpsds -i 0 -d hdf0001bg                 # PHI (vector)
+  % hdp dumpsds -i 1 -d hdf0001bg                 # R (vector)
+  % hdp dumpsds -i 2 -d hdf0001bg                 # R-velocity (matrix)
+  % hdp dumpsds -i 5 -d hdf0001bg                 # PHI-velocity (matrix)
+  % hdp dumpsds -i 8 -d hdf0001bg                 # DENSITY (matrix)
   
 \end{verbatim}
 
@@ -473,8 +485,8 @@ exists, but has not been excersized in a long time.
 
 {\tt tsd} scans an HDF SDS :
 \footnotesize\begin{verbatim}
-% tsd hdf001bg 
-Found 3 scientific data sets in run001/hdf001bg
+% tsd hdf0001bg 
+Found 3 scientific data sets in run001/hdf0001bg
 1: R-VELOCITY AT TIME=1.00E-01(20,37) km/sec  -> [740 elements of type: 5 (FLOAT32)]
 2: PHI-VELOCITY AT TIME=1.00E-01(20,37) km/sec  -> [740 elements of type: 5 (FLOAT32)]
 3: DENSITY AT TIME=1.00E-01(20,37) Msolar/pc**2  -> [740 elements of type: 5 (FLOAT32)]
@@ -506,12 +518,12 @@ dimension listed in the output of the arrays.
 
 \footnotesize\begin{verbatim}
 
-% tsd hdf000bg
-Found 3 scientific data sets in hdf000bg
+% tsd hdf0000bg
+Found 3 scientific data sets in hdf0000bg
 1: R-VELOCITY AT TIME=0.00E+00(40,67) km/sec  -> [2680 elements of type: 5 (FLOAT32)]
 2: PHI-VELOCITY AT TIME=0.00E+00(40,67) km/sec  -> [2680 elements of type: 5 (FLOAT32)]
 3: DENSITY AT TIME=0.00E+00(40,67) Msolar/pc**2  -> [2680 elements of type: 5 (FLOAT32)]
-% tsd hdf000bg - coord=t | head -67 | tabplot - 1 4
+% tsd hdf0000bg - coord=t | head -67 | tabplot - 1 4
 
 \end{verbatim}\normalsize
 
@@ -523,9 +535,9 @@ for visual inspection. Just remember that the first axis is the radial axis, the
 second one the angular.  A ring will thus show up as a vertical structure.
 
 \footnotesize\begin{verbatim}
-% sdsfits hdf001bg map001vr.fits 1
-% sdsfits hdf001bg map001vt.fits 2
-% sdsfits hdf001bg map001de.fits 3
+% sdsfits hdf0001bg map001vr.fits 1
+% sdsfits hdf0001bg map001vt.fits 2
+% sdsfits hdf0001bg map001de.fits 3
 \end{verbatim}\normalsize
 
 Here is another plot:
@@ -542,11 +554,11 @@ HDF files into a cartesian coordinate system.
 It is specific to this polar-coordinate problem.
 
 \footnotesize\begin{verbatim}
-% hdfgrid hdf001bg map000de.ccd zvar=den
-% hdfgrid hdf001bg map000vr.ccd zvar=vr
-% hdfgrid hdf001bg map000vt.ccd zvar=vt
-% hdfgrid hdf001bg map000vx.ccd zvar=vx
-% hdfgrid hdf001bg map000vy.ccd zvar=vy
+% hdfgrid hdf0001bg map000de.ccd zvar=den
+% hdfgrid hdf0001bg map000vr.ccd zvar=vr
+% hdfgrid hdf0001bg map000vt.ccd zvar=vt
+% hdfgrid hdf0001bg map000vx.ccd zvar=vx
+% hdfgrid hdf0001bg map000vy.ccd zvar=vy
 \end{verbatim}\normalsize
 
 Note that the {\tt vx} and {\tt vy} velocity fields
@@ -601,7 +613,7 @@ Here is an example of use: the initial conditions is gas flow on
 circular orbits, so we'll integrate the flow and see if they remain
 on circular orbits:
 
-	mkvrt hdf000bg test000.vrt
+	mkvrt hdf0000bg test0000.vrt
 
 \end{verbatim}
 
