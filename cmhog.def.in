@@ -1,6 +1,7 @@
 #define UNIX
 #define @SYSTEM@
 #define TEUBEN
+#define @FITSIO@
 #define NO_OF_J_ZONES  73
 #define NO_OF_K_ZONES  46
 #define MAX_OF_IJK     73

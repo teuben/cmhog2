@@ -70,6 +70,7 @@ C  there are two modes of using PGRID:    when pot0 given, it will use the exter
 C  file (a fits file)
 C
       if (pot0 .ne. ' ') then
+#ifdef FITSIO
 	write(*,*) 'Using a grid from an external file: ',pot0
 	rwmode = 0
 	status = 0
@@ -133,6 +134,10 @@ C
 	write(*,*) 'Pattern speed omega = ',omega
 	write(*,*) 'Halo: vhalo,rhalo= ',vhalo,rhalo
 	write(*,*) 'Disk: gamma= ',gamma
+#else
+	write(*,*) 'Support for FITSIO was not properly encoded'
+	STOP
+#endif
 C
 C  the send mode of using 'pgrid' is setting the number of pixels of the grid,
 C  and an internal grid is computed exactly from the analytical potential
