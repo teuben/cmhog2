@@ -28,7 +28,8 @@ c-----------------------------------------------------------------------
       REAL gpot0,gpot1,gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
       REAL gomega
       COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomega,
-     * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
+     * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2,
+     *          grhalo,gvhalo
 
       external inipotential,potential
 c\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\////////////////////////////////
@@ -38,7 +39,8 @@ c     assumed that igrav=1 and igeom=1
       namelist /pgen/ amp,npar,amode,n,aob,rl,qm,rhoc,bartime
       namelist /spiral/ spamp,spsc,spang,sppat,sr,pc
       namelist /pgrid/pot0,pot1,naxis1,naxis2,rmax,omega,gamma,
-     *                crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
+     *                crval1,crval2,crpix1,crpix2,cdelt1,cdelt2,
+     *                rhalo,vhalo
       ndim=3
       npar=7
       name='dummy'
@@ -55,6 +57,8 @@ c     assumed that igrav=1 and igeom=1
       rmax=0.0
       omega=0.0
       gamma=1.0
+      rhalo=1.0
+      vhalo=0.0
       read (1,pgen)
       write(2,pgen)
       read (1,spiral)

@@ -1,3 +1,5 @@
+- if dtmovie=0.0, don't even write the movie files at t=0
+
 - gcc/cpp needs -traditional, starting with gcc 2.96
 
 - intel compiler in autoconf
