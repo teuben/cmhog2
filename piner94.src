@@ -26,9 +26,11 @@ C 	    (due to the usage of the cpp preprocessor)
 C=======================================================================
 c  warning: can only have one 'BLOCK DATA' per program
       BLOCK DATA
+      IMPLICIT NONE
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,
+      REAL gomegp
+      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
       DATA nx/0/
       DATA ny/0/
@@ -45,7 +47,8 @@ C INITIALIZE THE POTENTIAL AND FORCE CALCULATIONS (after Lias INPOT)
 C
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,
+      REAL gomegp
+      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
       COMMON/ AREAD/FCMASS,AXIRAT,QUAD,CENDEN,RADLAG, INDEX
       REAL*8 FCMASS, AXIRAT, QUAD, CENDEN, RADLAG
@@ -53,7 +56,7 @@ C
 C 
       COMMON/AXISY/C1BUL,CONST, CORAD,VT2,VTDR2, RTI2
       REAL*8 C1BUL, CONST, CORAD, VT2, VTDR2, RTI2
-C
+C 
       COMMON /COM1/ OMEGS, A2, B2, C2, E, NEQ
       INTEGER NEQ
       REAL*8 OMEGS, A2, B2, C2, E
@@ -208,7 +211,8 @@ C  POINT AS IN THE HYDRO CODE
       QQ = (QQ + AT * RADLAG) / (RADLAG * RADLAG)
       OMEGS = SQRT(QQ)
       par(1) = omegs
-c                                    set up the internal (axi) grid if rmax > 0
+c                   set up the grid if nx>0 (rmax > 0 internal, else external)
+c 	            can also choose a pattern speed overriding pgen::rl value
 	IF (nx.GT.0 .and. grmax.gt.0.0) then
 	   crpix1 = 0.5*(nx+1)
 	   crpix2 = 0.5*(ny+1)
@@ -229,7 +233,7 @@ c                                    set up the internal (axi) grid if rmax > 0
 	ELSE IF (nx.GT.0) THEN
 	   write(*,*) 'Using an external grid of size ',nx,ny
 	   IF(quad.GT.0.0) THEN
-	     write(*,*) 'Setting pot0 = pot0 + pot1; quad=',quad
+	     write(*,*) 'Now setting pot0 = pot0 + pot1; quad=',quad
 	     DO 513 iy=1,ny
 	       DO 513 ix=1,nx
 		 gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy)
@@ -237,7 +241,12 @@ c                                    set up the internal (axi) grid if rmax > 0
 	   ELSE
 	     write(*,*) 'Using pot0, quad=',quad
 	   ENDIF
+	   if (gomegp.GT.0) then
+		omegs = gomegp
+		par(1) = gomegp
+	   endif
 	ENDIF
+	write(*,*) 'Using pattern speed=',omegs
       RETURN
       IF(QUAD.GT.QUADM) THEN
 	PRINT 612,QUAD,QUADM
@@ -256,7 +265,8 @@ c----------------------------------------------------------------------
 
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,
+      REAL gomegp
+      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2
 
       INTEGER ix,iy

@@ -1,6 +1,11 @@
 #include "cmhog.def"
 c=======================================================================
 c////////////////////////  SUBROUTINE GALAXY  \\\\\\\\\\\\\\\\\\\\\\\\\\
+c  defines the potential from either an analytical subroutine
+c  (it should define inipotential() and potential() as defined
+c   by NEMO), or via up to two grid (FITS) files defining the
+c   axisymmetric and  non-axisymmetric parts of the potental
+c   on an X-Y grid.
 c
       subroutine galaxy
 c
@@ -14,14 +19,15 @@ c-----------------------------------------------------------------------
       real arg
       character name*5, pot0*80, pot1*80, errtxt*40,comment*80
       real crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
-      real*8 amp,omega,amode,n,aob,qm,rhoc
+      real*8 amp,amode,n,aob,qm,rhoc
       real*8 par(8),pos(3),acc(3),pot,dumtime
       integer flun,bsize,status,rwmode,naxes(2)
       logical anyf
 
       INTEGER nx,ny
       REAL gpot0,gpot1,gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
-      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,
+      REAL gomega
+      COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomega,
      * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
 
       external inipotential,potential
@@ -31,9 +37,8 @@ c
 c     assumed that igrav=1 and igeom=1
       namelist /pgen/ amp,npar,amode,n,aob,rl,qm,rhoc,bartime
       namelist /spiral/ spamp,spsc,spang,sppat,sr,pc
-      namelist /pgrid/pot0,pot1,naxis1,naxis2,rmax,
+      namelist /pgrid/pot0,pot1,naxis1,naxis2,rmax,omega,gamma,
      *                crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
-      omega=0.0
       ndim=3
       npar=7
       name='dummy'
@@ -48,12 +53,17 @@ c     assumed that igrav=1 and igeom=1
       crpix1=1.0
       crpix2=1.0
       rmax=0.0
+      omega=0.0
+      gamma=1.0
       read (1,pgen)
       write(2,pgen)
       read (1,spiral)
       write(2,spiral)
       read (1,pgrid)
       write(2,pgrid)
+C
+C  there are two modes of using PGRID:    when pot0 given, it will use the external
+C  file (a fits file)
 C
       if (pot0 .ne. ' ') then
 	write(*,*) 'Using a grid from an external file: ',pot0
@@ -75,7 +85,7 @@ C
 	call ftgkye(flun,'CRVAL2',crval2,comment,status)
 	call ftgkye(flun,'CDELT1',cdelt1,comment,status)
 	call ftgkye(flun,'CDELT2',cdelt2,comment,status)
-	write(*,*) 'ftopen: ',status,errtxt,naxis1,naxis2
+	write(*,*) 'ftopen pot0: ',status,' ',errtxt,naxis1,naxis2
 	write(*,*) 'X-range: ',(1-crpix1)*cdelt1+crval1,' ...',
      *                    (naxis1-crpix1)*cdelt1+crval1,' kpc.'
 	write(*,*) 'Y-range: ',(1-crpix2)*cdelt2+crval2,' ...',
@@ -83,7 +93,7 @@ C
 	write(*,*) '(wcs: ',crpix1,crpix2,crval1,crval2,cdelt1,cdelt2,')'
 	call ftclos(flun,status)
 	call ftgerr(status,errtxt)
-	write(*,*) 'ftclos: ',status,errtxt
+	write(*,*) 'ftclos pot0: ',status,' ',errtxt
 
 	call ftopen(flun,pot1,rwmode,bsize,status)
 	if (status.eq.0) then
@@ -94,7 +104,7 @@ C
 	  call ftgerr(status,errtxt)
 	  call ftclos(flun,status)
 	  call ftgerr(status,errtxt)
-	  write(*,*) 'ftclos: ',status,errtxt
+	  write(*,*) 'ftclos pot1: ',status,' ',errtxt
         else
           write(*,*) 'No pot1 - only constant axisymmetric potential'
 	  do 3 k=1,512
@@ -112,6 +122,14 @@ C
 	gcdelt1 = cdelt1
 	gcdelt2 = cdelt2
 	grmax = 0.0
+	gomega = omega
+	write(*,*) 'Pattern speed omega = ',omega
+C
+C  the send mode of using 'pgrid' is setting the number of pixels of the grid,
+C  and an internal grid is computed exactly from the analytical potential
+C  NEMO routines can also generate those externally on a grid, but this method
+C  makes the program independant of NEMO
+C
       else if (naxis1.gt.0 .and. naxis2.gt.0) then
 					
 	write(*,*) 'Using an internal grid; size=',naxis1,naxis2,
@@ -125,6 +143,8 @@ C
 	gcdelt1 = cdelt1
 	gcdelt2 = cdelt2
 	rmax = rmax
+	gomega = omega
+	write(*,*) 'Pattern speed omega = ',omega
       endif
 C
       do 5 i=1,npar
@@ -147,12 +167,12 @@ C
 	  pos(3)=0.0
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  diskyed(j,k)=(acc(1)*cos(zcenteul(k)))
-     &			 +(acc(2)*sin(zcenteul(k)))
+     &			 +(acc(2)*sin(zcenteul(k)))*gamma
 	  pos(1)=radius(j)*cos(zcenteul(k))
 	  pos(2)=radius(j)*sin(zcenteul(k))
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  diskycen(j,k)=(acc(1)*cos(zcenteul(k)))
-     &			  +(acc(2)*sin(zcenteul(k)))
+     &			  +(acc(2)*sin(zcenteul(k)))*gamma
 7       continue
       endif
 c
@@ -167,12 +187,12 @@ c
 	  pos(3)=0.0
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  baryed(j,k)=(acc(1)*cos(zcenteul(k)))
-     &			+(acc(2)*sin(zcenteul(k)))
+     &			+(acc(2)*sin(zcenteul(k)))*gamma
 	  pos(1)=radius(j)*cos(zcenteul(k))
 	  pos(2)=radius(j)*sin(zcenteul(k))
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  barycen(j,k)=(acc(1)*cos(zcenteul(k)))
-     &			 +(acc(2)*sin(zcenteul(k)))
+     &			 +(acc(2)*sin(zcenteul(k)))*gamma
           if (y(j).gt.sr) then
             arg=2.0*((log(y(j)-sr)/tan(spang))-zcenteul(k))+pc
             spyed(j,k)=-spamp*(y(j)-sr)**2*exp(-spsc*(y(j)-sr))*
@@ -206,12 +226,12 @@ C
 	  pos(2)=radius(j)*sin(z(k))
 	  pos(3)=0.0
 	  call potential (ndim,pos,acc,pot,dumtime)
-	  barzed(j,k)=(acc(1)*sin(z(k)))-(acc(2)*cos(z(k)))
+	  barzed(j,k)=(acc(1)*sin(z(k)))-(acc(2)*cos(z(k)))*gamma
 	  pos(1)=radius(j)*cos(zcenteul(k))
 	  pos(2)=radius(j)*sin(zcenteul(k))
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  barzcen(j,k)=(acc(1)*sin(zcenteul(k)))
-     &			 -(acc(2)*cos(zcenteul(k)))
+     &			 -(acc(2)*cos(zcenteul(k)))*gamma
           if (radius(j).gt.sr) then
             arg=2.0*((log(radius(j)-sr)/tan(spang))-z(k))+pc
             spzed(j,k)=-2.0*spamp*(radius(j)-sr)**2*

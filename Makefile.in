@@ -55,6 +55,7 @@ PROB   = galaxy
 #       for solaris, should use /lib/cpp 
 #       NOTE: gcc3.3 will remove -traditional support......
 # 	will need to use the traditional preprocessor
+#	also check:  -traditional-cpp
 CPP    = @CPP@
 CMFLAGS= @CMFLAGS@
 FC     = @F77@

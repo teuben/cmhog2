@@ -5,6 +5,7 @@
 - if no HDF4 libraries found
 
 - /lib/cpp for native sun compiler
+  (but watch, some talk about deprecating important features in gcc3 series)
 
 - setenv LD_LIBRARY_PATH /local/lib on e.g. astr.dept.
 
@@ -26,4 +27,7 @@
 	setenv CPP "gcc -E -traditional"
 	configure
 	make cmhog
+
+- Portland Compiler (pgc,pgfc)
+
 make 

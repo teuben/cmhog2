@@ -4,7 +4,7 @@ c////////////////////////  CMHOG MAIN PROGRAM  \\\\\\\\\\\\\\\\\\\\\\\\\
 c
 c  written by: Jim Stone
 c  date:       January, 1991
-c  modified1:
+c  modified1:  -- see CVS logs of module cmhog2 --
 c
 c  PURPOSE:  Implementation of Colella and Woodwards Lagrange plus
 c  remap PPM scheme for gas dynamics.  Designed to work on vector and
@@ -12,7 +12,7 @@ c  massively parallel machines.
 c
 c  HISTORY: none
 c
-c  DOCUMENTATION: none
+c  DOCUMENTATION: see cmhog2/doc/hydro.tex
 c-----------------------------------------------------------------------
 #include "param.h"
 #include "grid.h"
@@ -24,7 +24,7 @@ c-----------------------------------------------------------------------
 c\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\///////////////////////////////////
 c=======================================================================
 c
-      write(6,"('Welcome to CMHOG version 0.2 [teuben 19-mar-2001]')")
+      write(6,"('Welcome to CMHOG version 0.3 [teuben 3-nov-2002]')")
       iswres = 0
       iswhdf = 1
       iswhst = 1
