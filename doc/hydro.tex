@@ -380,6 +380,28 @@ Sample X-Y gridded tangential in a 8bit deep image (if dtmovie > 0)
 
 \end{itemize}
 
+Although the author has mostly used NEMO for analysis and visualization, 
+there is a native NCSA program which can be used to quickly just look
+at the numbers.
+
+\begin{verbatim}
+  % hdp dumpsds -i <index> -d <hdf_file>
+\end{verbatim}
+which writes only the data of set with index 
+{\tt index>.  Index 0 are the phi
+values, index 1 are the radial values, and those are repeated in 3,4 and
+6,7.  The v, w and d data is in sets 2, 5 and 8.  To get the dimensions,
+use -h instead of -d on sets 0 and 1 to get the header (not the data) and
+grep for the 'Size =' line.  Not all that pretty but it all works!
+\begin{verbatim}
+  % hdp dumpsds -i 0 -d hdf001bg                 # PHI (vector)
+  % hdp dumpsds -i 1 -d hdf001bg                 # R (vector)
+  % hdp dumpsds -i 2 -d hdf001bg                 # R-velocity (matrix)
+  % hdp dumpsds -i 5 -d hdf001bg                 # PHI-velocity (matrix)
+  % hdp dumpsds -i 8 -d hdf001bg                 # DENSITY (matrix)
+  
+\end{verbatim}
+
 \section{NEMO programs}
 
 Most, if not all, NEMO programs come with a manual page that should
