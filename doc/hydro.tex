@@ -757,12 +757,14 @@ P-III Coppermine & 933   &	56.6 & 52.8 & \\
 P-III		& 700   &	75.2 & 52.6 & \\
 P-III		& 600	&	91.1 & 54.7 & \\
  		& 	&	65.0 &      & ifc -O \\
-P-III/512 Katmai & 500  &	106.5 & 53.3 & \\
-Alpha EV67	& 666   &             &      & bad compiler? \\
-AMD 		& 1600  &             &      & \\
-Ultra-SPARC-IIi &  440  &	      &      & g77 -g -O2\\
+P-III/512 Katmai & 500  &	106.5 & 53.3 & \\  
+Alpha EV67	& 666   &        42.7 & 28.4 & \\ % numenor
+		&	&	 42.4 &      & -ffast-math -O3 -mfp-regs \\
+AMD 		& 1600  &        23.1 & 37.0  & \\ % ithil
+Ultra-SPARC-IIi &  440  &	      &      & g77 -g -O2\\   % venus
 		&  	&	 66.0 & 29.0 & f77 -O \\
 		&  	&	 55.0 & 24.2 & f77 -fast \\
+Ultra-SPARC-    &  170  &       xxx.0 &      & f77 -fast \\
  \hline
 \end{tabular}
 \end{table}
