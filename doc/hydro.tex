@@ -43,7 +43,7 @@ the Piner, Stone \& Teuben (1995, ApJ 449, 508) hydro code
 HDF\footnote{{\tt cmhog} only writes the HDF4/SDS data format}
 output data can be used with
 NEMO and MIRIAD for some basic visualization and data analysis.
-Only single runs are covered, restart runs are not discussed.
+Only single runs are covered, restart runs are not discussed here.
 
 \end{abstract}
 
@@ -60,7 +60,7 @@ slowly (usually 0.1Gyr) turned on while keeping
 the total mass constant. The simulation
 is usually followed for 1-2 Gyr, to settle into a quasi-stationary
 state, at which time the gas properties (density, flow velocities)
-can be studies and compared to observations.
+can be studied and compared to observations.
 
 \section{The ``cmhogin'' input file}
 
@@ -225,9 +225,7 @@ The grid is a polar grid, and set by the {\tt ggen2} (radial, the Y variable)
 and {\tt ggen3} (angular, the Z variable) namelist entries, 
 of which the {\tt min} and {\tt max} variables control the 
 inner and outer edges of the grid in that dimension resp. The code
-in {\tt ggen.src} will generate a grid based on a number of choices
-of how the grid is specified in the {\tt ggen2} and {\tt ggen3}
-namelists.
+in {\tt ggen.src} will read the namelists and generate a grid.
 
 \begin{verbatim}
  $ggen2 nbl=132,ymin=0.1,ymax=16.0,yrat=1.03926991,igrid=1,lgrid=.true. $
@@ -235,7 +233,69 @@ namelists.
 \end{verbatim}
 
 
-We suggest the following procedure:
+We suggest the following procedures, mirroring the {\tt igrid=1} and 
+{\tt igrid=2} cases in the {\tt ggen3} namelist:
+
+\begin{enumerate}
+\item
+choose  {\tt ggen2::ymin} = $y_{min}$, the inner radial 
+boundary of the grid (in kpc). We normally choose 0.1
+
+\item
+choose {\tt ggen2::ymax} = $y_{max}$, the outer radial 
+boundary of the grid (in kpc). We normally choose 16.
+
+\item
+choose {\tt ggen2::nbl} = $N_y$, the number of radial zones.
+
+\item
+choose {\tt ggen2::yrat} = $f$, it should be a little over 1,
+probably around
+$$
+	 f \approx {y_{max} \over y_{min}}^{1/{N_y}}
+$$
+this formulae is based on a simple geometric growth of the cell edges, in reality
+it are the cell sizes that grow geometrically with $f$.
+
+\item
+Compute {\tt ggen3::nbl} = $N_z$, the number of angular zones, such that cells are 
+close to being square from the following relationship that equates the angular
+and radial zone size near at inner boundary:
+$$
+   {{\pi y_{min}} \over N_z} = dy_{min} = (y_{max}-y_{min}) { {f-1} \over {f^{N_y}-1} }
+$$
+or
+$$
+N_z =   {  {\pi}   \over  { {y_{max} \over y_{min}}  - 1 } }  { {f^{N_y}-1} \over {f-1} }
+$$
+The $N_z$ computed this way is not an integer, but if rounded to the nearest, the zones will be
+square enough for large enough $N$.
+An alternative is to find the value of $f$ that results in an exact integer
+value. For this a Newton-Raphson search is needed (see below). 
+\item
+Set {\tt ggen3::zmax} = $z_{max}$  to $\pi/2$ for a half-symmetric plane.
+
+\item
+Set {\tt ggen3::zmin} = $z_{min}$ to $-\pi/2$ for a half-symmetric plane.
+
+
+\end{enumerate}
+
+A NEMO program {\tt grid} is distributed with {\tt cmhog2} to aid
+in choosing a grid with decent properties. In default mode it will follow the above procedure, e.g.
+
+\begin{verbatim}
+ % grid ny=251 ymin=0.1 ymax=16 yrat=1.02043
+ny=251 ymin=0.1 ymax=16 yrat=1.02043 dymin=0.00204079 dz=0.00204 
+       nzy=153.94 est_yrat=1.02043 igrid=1
+
+\end{verbatim}
+suggests that for this choice of {\tt yrat} the number of angular zones should be
+$N_z=154$.
+
+An alternative approach is to first fix the number of angular zones, which  through
+the desired square grid determines {\tt dymin},
+from which then {\tt yrat} can be computed:
 
 \begin{enumerate}
 \item
@@ -247,28 +307,28 @@ choose {\tt ggen2::ymax} = $y_{max}$, the outer boundary of the grid (in kpc).
 We normally choose 16.
 
 \item
+choose {\tt ggen3::nbl} = $N_z$, the number of angular zones
+
+\item
 choose {\tt ggen2::nbl} = $N_y$, the number of radial zones.
 
 \item
-choose {\tt ggen2::yrat} = $f$, it should be a little over 1,
-probably around
+set {\tt ggen2::dymin} from the requirement that the grid should
+be close to square, i.e.
 $$
-	 f = {y_{max} \over y_{min}}^{1/{N_y}}
+   dy_{min} = {  {\pi y_{min}} \over N_z}.
 $$
-this formulae is based on a simple geometric growth of the cell edges, in reality
-it are the cell sizes that grow geometrically with $f$.
+Compute {\tt ggen2::yrat} = $f$, by solving for
 
-\item
-Compute {\tt ggen3::nbl} = $N_z$, the number of angular zones, such that cells are 
-close to being square from the following relationship that equates the angular
-and radial zone size near at inner boundary:
 $$
    {{\pi y_{min}} \over N_z} = (y_{max}-y_{min}) { {f-1} \over {f^{N_y}-1} }
 $$
-or
-$$
-N_z =   {  {\pi}   \over  { {y_{max} \over y_{min}}  - 1 } }  { {f^{N_y}-1} \over {f-1} }
-$$
+For this a Newton-Raphson search is needed. It should be noted here that $f$ should 
+not be too different from 1, e.g. 1.05 is ok, but not much larger. This is because
+higher-order schemes like PPM rely on a fortuitious cancellation of 
+truncation error which only occurs if the grid size is uniform.  As you 
+make $f$ much different than one, this uncancelled error can become 
+significant.  
 
 \item
 Set {\tt ggen3::zmax} = $z_{max}$  to $\pi/2$ for a half-symmetric plane.
@@ -280,12 +340,22 @@ Set {\tt ggen3::zmin} = $z_{min}$ to $-\pi/2$ for a half-symmetric plane.
 \end{enumerate}
 
 
+\begin{verbatim}
+ % grid ny=251 ymin=0.1 ymax=16 nz=154 dymin="pi*0.1/154"
+ny=251 ymin=0.1 ymax=16 yrat=1.02043 dymin=0.00204 dz=0.00204 
+       nzy=154 est_yrat=1.02043 igrid=2
+
+\end{verbatim}
+
+
+
 \section{Output Files}
 
 For the remainder of the discussion, we will assume all data produced
 by {\tt cmhog} is dumped in a run-directory. In general, it is a good
 idea to remove any potential files {\tt cmhog} may create, though
-in practice only the {\tt hdfXXXbg} files are the problem makers.
+in practice only the {\tt hdfXXXbg} files are the problem makers
+(by default data would be appendedto any existing HDF files).
 
 Depending on options given to the program, you may find the following files
 in your run directory:
