@@ -56,7 +56,7 @@ c
           wijb(k) = wfloor
 30    continue
       read (1,ijb)
-c      write(2,ijb)
+      write(2,ijb)
 c
       do 40 k=1,kn
           nojb(k) = 2
@@ -65,7 +65,7 @@ c
           wojb(k) = wfloor
 40    continue
       read (1,ojb)
-c      write(2,ojb)
+      write(2,ojb)
 c
       do 50 j=1,jn
           nikb(j) = 4
@@ -74,7 +74,7 @@ c
           wikb(j) = wfloor
 50    continue
       read (1,ikb)
-c      write(2,ikb)
+      write(2,ikb)
 c
       do 60 j=1,jn
           nokb(j) = 4
@@ -83,7 +83,7 @@ c
           wokb(j) = wfloor
 60    continue
       read (1,okb)
-c      write(2,okb)
+      write(2,okb)
 c
       read (1,eos)
       write(2,eos)

@@ -1,3 +1,4 @@
+c -*- fortran -*-
 #include "cmhog.def"
 c=======================================================================
 c/////////////////////////  SUBROUTINE NUDT  \\\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -61,6 +62,8 @@ c
       if (dt .lt. dtmin) then
         write(6,"('WARNING from NUDT: dt < dtmin',/1x,'dt= ',1pe12.5)") dt
         write(6,"('dtmin= ',1e12.5)") dtmin
+	write(6,"('timey= ',1e12.5)") timey
+	write(6,"('timez= ',1e12.5)") timez
         nwarn=nwarn+1
       endif
       if ((time+dt) .gt. tlim) dt = tlim-time

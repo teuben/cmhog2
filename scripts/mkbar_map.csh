@@ -6,7 +6,11 @@
 #  (bar hydro, polar coordinates), projects it to a requested
 #  sky view as to be able to compare it with an existing maps
 #  (mostly meant for a velocity field). It will need a reference
-#  map in order for pixel by pixel comparison
+#  map in order for pixel by pixel comparison, and then computes
+#  a difference map between projected model and reference map
+#  (the 'observation') with the intent to minimize sigma.
+#
+#  See also mkbar_cube.csh for a 3D version making cubes.
 #
 #  In the model the bar is assumed oriented along Y axis (PA=0), and 
 #  flows CCW as seen from the positive Z axis.
@@ -20,7 +24,7 @@
 #  the sign of the galaxy angular momentum vector, where the positive
 #  Z axis points to the observer (hence doppler recession is -vz).
 #
-#   9-may-03  Derived from mkbar_cube.csh
+#   9-may-03  Derived from mkbar_cube.csh with better WCS and refmap
 
 set version=9-may-03
 

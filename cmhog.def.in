@@ -8,6 +8,7 @@
 #define IMG_X          500
 #define IMG_Y          500 
 #define PGMAX      @PGMAX@
+#undef  HDFORCES
 
 #define RESTART           empty
 #define GRID_GENERATOR    ggen

@@ -1,3 +1,4 @@
+c -*- fortran -*-
 #include "cmhog.def"
 c	TEUBEN will turn on HDF output, else ascii output ala Glenn Piner
 #ifdef TEUBEN
@@ -101,6 +102,7 @@ c
       write(string,"('DENSITY AT TIME=',1pe8.2)") time
       ret = dssdast(string,'Msolar/pc**2','1pe8.2','Polar')
       ret = dsadata(filename,rank,shape,data)
+
 #if 0
 c
 c  total energy
@@ -138,6 +140,59 @@ c
       ret = dsadata(filename,rank,shape,data)
 #endif
 c
+
+c     forces
+#ifdef HDFORCES
+      do 810 k=ks,ke
+      do 810 j=js,je
+        data((k-ks)*nyd + (j-js)+1) = diskyed(j,k)
+810   continue
+      write(string,"('DISKYED AT TIME=',1pe8.2)") time
+      ret = dssdast(string,'force','1pe8.2','Polar')
+      ret = dsadata(filename,rank,shape,data)
+
+      do 820 k=ks,ke
+      do 820 j=js,je
+        data((k-ks)*nyd + (j-js)+1) = diskycen(j,k)
+820   continue
+      write(string,"('DISKYCEN AT TIME=',1pe8.2)") time
+      ret = dssdast(string,'force','1pe8.2','Polar')
+      ret = dsadata(filename,rank,shape,data)
+
+      do 830 k=ks,ke
+      do 830 j=js,je
+        data((k-ks)*nyd + (j-js)+1) = baryed(j,k)
+830   continue
+      write(string,"('BARYED AT TIME=',1pe8.2)") time
+      ret = dssdast(string,'force','1pe8.2','Polar')
+      ret = dsadata(filename,rank,shape,data)
+
+      do 840 k=ks,ke
+      do 840 j=js,je
+        data((k-ks)*nyd + (j-js)+1) = barycen(j,k)
+840   continue
+      write(string,"('BARYCEN AT TIME=',1pe8.2)") time
+      ret = dssdast(string,'force','1pe8.2','Polar')
+      ret = dsadata(filename,rank,shape,data)
+
+      do 850 k=ks,ke
+      do 850 j=js,je
+        data((k-ks)*nyd + (j-js)+1) = barzed(j,k)
+850   continue
+      write(string,"('BARZED AT TIME=',1pe8.2)") time
+      ret = dssdast(string,'force','1pe8.2','Polar')
+      ret = dsadata(filename,rank,shape,data)
+
+      do 860 k=ks,ke
+      do 860 j=js,je
+        data((k-ks)*nyd + (j-js)+1) = barzcen(j,k)
+860   continue
+      write(string,"('BARZCEN AT TIME=',1pe8.2)") time
+      ret = dssdast(string,'force','1pe8.2','Polar')
+      ret = dsadata(filename,rank,shape,data)
+#endif
+
+
       return
       end
 #else

@@ -1,3 +1,4 @@
+c -*- fortran -*-
 #include "cmhog.def"
 c=======================================================================
 c////////////////////////  SUBROUTINE GALAXY  \\\\\\\\\\\\\\\\\\\\\\\\\\
@@ -125,6 +126,7 @@ C
 	  write(*,*) 'ftclos pot1: ',status,' ',errtxt
           if (status.ne.0) stop
         else
+c         TODO:  if really requested, and not found, it should be an error and bomb here!
           write(*,*) 'No pot1 - only constant axisymmetric potential'
 	  do 3 k=1,PGMAX
 	  do 3 j=1,PGMAX
@@ -150,8 +152,8 @@ C
 	write(*,*) 'Pattern speed omega = ',omega
 	write(*,*) 'Halo: vhalo,rhalo= ',vhalo,rhalo
 	write(*,*) 'Disk: gamma= ',gamma
-	write(*,*) 'Edge tapering: start,scale=',rtstart,rtscale
 	write(*,*) 'Nucl tapering: start,scale=',rnstart,rnscale
+	write(*,*) 'Edge tapering: start,scale=',rtstart,rtscale
 	write(*,*) 'Hanning smooth r,t: ',nrh,nth
 #else
 	write(*,*) 'Support for FITSIO was not enabled - '
@@ -292,7 +294,7 @@ c          endif
      &     call taper(barycen,jn,j,ks,ke+1,radius(j),rtstart,rtscale)
 9       continue
       endif
-C                                 (pjt - aug 2003: should the first radius not be y ??? )
+c
       if (nzz.gt.1) then
 	do 11 j=js,je
 	 do 10 k=ks-1,ke+1
@@ -322,6 +324,16 @@ c            spzed(j,k)=spzed(j,k)*exp(16.0-radius(j))
 c            spzcen(j,k)=spzcen(j,k)*exp(16.0-radius(j))
 c          endif
 10     continue
+       if (radius(j).lt.rnstart)
+     &   call taper(barzed,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
+       if (radius(j).lt.rnstart)
+     &   call taper(barzcen,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
+
+       if (radius(j).gt.rtstart)
+     &   call taper(barzed,jn,j,ks-1,ke+1,radius(j),rtstart,rtscale)
+       if (radius(j).gt.rtstart)
+     &   call taper(barzcen,jn,j,ks-1,ke+1,radius(j),rtstart,rtscale)
+
 11    continue
       endif
 c
@@ -354,29 +366,37 @@ c
       real a(ny,1),rad,r0,rs
 c
       integer k
-      real t,sum1,sum2
+      real t
+      double precision sum1, sum2
       
-      sum1 = 0.0
-      sum2 = 0.0
+      sum1 = 0.0d0
+      sum2 = 0.0d0
 
       do 100 k=k1,k2
          sum1 = sum1 + a(j,k)
          sum2 = sum2 + a(j,k)*a(j,k)
-c        write(*,*) 'k=',k,a(j,k)
+c        write(*,*) 'k=',k,a(j,k),sum1,sum2
  100  continue
-      sum1 = sum1 / real(k2-k1+1)
-      sum2 = sum2/real(k2-k1) - sum1*sum1
+      sum1 = sum1/dble(k2-k1+1)
+      sum2 = sum2/dble(k2-k1+1) - sum1*sum1
       if (sum2 .lt. 0) then
          sum2 = -sqrt(-sum2)
       else
          sum2 = sqrt(sum2)
       endif
-      t = exp(- (rad-r0)**2/(2*rs**2))
 
-      write(*,*) 'taper ',sum1,sum2,j,k1,k2,rad,t
-
-      do 101 k=k1,k2
-         a(j,k) = t*a(j,k) + (1-t)*sum1
- 101  continue
+      if (rs.gt.0) then
+         t = exp(- (rad-r0)**2/(2*rs**2))
+         write(*,*) 'taper_1 ',sum1,sum2,j,k1,k2,rad,t
+         
+         do 101 k=k1,k2
+            a(j,k) = t*a(j,k) + (1-t)*sum1
+ 101     continue
+      else
+         write(*,*) 'taper_0 ',sum1,sum2,j,k1,k2,rad,0
+         do 102 k=k1,k2
+            a(j,k) = sum1
+ 102     continue
+      endif
 
       end

@@ -1,3 +1,4 @@
+c -*- fortran -*-
 #include "cmhog.def"
 C
 C   History:
@@ -20,6 +21,7 @@ C   21-sep-02   internal grid patch (set nx=ny=0 and no grid used)
 C    4-oct-02   conversion to two pot0,pot1 grid for axisym + 'bar'   PJT
 C   31-jul-03   added rtstart,rtscale                                 PJT
 C   11-aug-03   taper at r0 and r1 now                                PJT
+C   28-sep-03   bomb when interpolations are going off the grid       PJT
 C
 C   ToDO:
 C	code DACSH()
@@ -252,6 +254,8 @@ c 	            can also choose a pattern speed overriding pgen::rl value
                    taper = exp(-(rpos-rtstart)**2/(2*rtscale**2))
 		 endif
 c                write(*,*) 'taper: ',ix,iy,xpos,ypos,rpos,taper
+c                setting taper=1 is needed to taper in the r-t  plane
+c                see new code in galaxy.src (pjt 19-aug-2003)
                  taper = 1.0
                  gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy) * taper
  513	     CONTINUE
@@ -297,6 +301,11 @@ c----------------------------------------------------------------------
 	 y = (pos(2)-crval2)/cdelt2 + crpix2 - 0.5
 	 ix = nint(x-0.5)
 	 iy = nint(y-0.5)
+         if (ix.le.1 .or. ix.ge.nx .or. iy.le.1 .or. iy.ge.ny) then
+            write(*,*) 'Grid not large enough for ',
+     *                  pos(1),pos(2),ix,iy,nx,ny
+            stop
+         endif
 	 dx=x-ix-0.5
 	 dy=y-iy-0.5
 	 x3=3*dx
