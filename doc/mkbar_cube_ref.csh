@@ -21,6 +21,7 @@
 #		center of the galaxy (bimasong data often don't do the VELO axis correct)
 #  17-apr-01    added velocity referencing using 'vsys' to be at v=0 in the model cube
 #               (bugs when model and data have different delta-V)
+#  11-apr-02    generic version with new geometry definitions
 
 if ($#argv == 0) then
   echo Usage: $0 in=HDF_DATASET out=BASENAME ...
@@ -32,15 +33,18 @@ endif
 unset in
 unset out
 # 			Defaulted Keywords
-set pa=0
-set inc=0
-set phi=0
+set pa=-42
+set inc=27
+set phi=44
+set rot=1
+#
 set rmax=6
 set n=200
 set beam=0.05
 set color=1
 set clean=1
-set refmap=n4303cube.fits
+#
+set refmap=""
 set pscale=0.5
 set vscale=1
 set vsys=0
@@ -48,10 +52,32 @@ set vsys=0
 set nvel=50
 set vmax=250
 
-#			Parse commandline to (re)set keywords
+set par=""
+
+#			Parse commandline to (re)set keywords, special case for par=
 foreach a ($*)
   set $a
+  if (-e "$par") then
+    source $par
+    set par=""
+  else
+    echo Warning, par=$par does not exist
+    set par=""
+  endif
 end
+
+#
+#  fix inc/pa for ccw(rot=1) or cw(rot=-1) cases for NEMO's euler angles
+#
+if ($rot == -1) then
+   set inc=$inc+180
+else if ($rot == 1) then
+   set pa=$pa+180
+else
+   echo "Bad rotation, must be 1 (ccw) or -1 (cw)"
+   exit 1
+endif
+
 #			Show i'm happy
 echo Files: in=$in out=$out 
 echo Grid: rmax=$rmax n=$n beam=$beam
@@ -61,33 +87,36 @@ set cell=`nemoinp "2*$rmax/$n"`
 set range="-${rmax}:${rmax}"
 echo "      Derived: cell=$cell"
 
+if (-e "$refmap") then
+    #   referencing 
+    set nz=(`fitshead $refmap | grep ^NAXIS3 | awk '{print $3}'`)
+    set pz=(`fitshead $refmap | grep ^CRPIX3 | awk '{print $3}'`)
+    set vz=(`fitshead $refmap | grep ^CRVAL3 | awk '{print $3}'`)
+    set dz=(`fitshead $refmap | grep ^CDELT3 | awk '{print $3}'`)
+    
+    set dz1=`nemoinp "2000*$vmax/$nz"`
+    set vref=`nemoinp "($vz-1000*$vsys)/($dz1)+$nvel/2+0.5"`
+    #set vscale=`nemoinp "$vscale*(2*$vmax/$nvel)/($dz/1000)"`
+    set refscale=$pscale,$pscale,$vscale
+    #                                    CHECK : is this -0.5 or +0.5   ?????
+    set refcen=`nemoinp $n/2-0.5`
+    #set refpix=$refcen,$refcen,$vref
 
-#   referencing 
-set nz=(`fitshead $refmap | grep ^NAXIS3 | awk '{print $3}'`)
-set pz=(`fitshead $refmap | grep ^CRPIX3 | awk '{print $3}'`)
-set vz=(`fitshead $refmap | grep ^CRVAL3 | awk '{print $3}'`)
-set dz=(`fitshead $refmap | grep ^CDELT3 | awk '{print $3}'`)
-
-set dz1=`nemoinp "2000*$vmax/$nz"`
-set vref=`nemoinp "($vz-1000*$vsys)/($dz1)+$nvel/2+0.5"`
-#set vscale=`nemoinp "$vscale*(2*$vmax/$nvel)/($dz/1000)"`
-set refscale=$pscale,$pscale,$vscale
-#                                    CHECK : is this -0.5 or +0.5   ?????
-set refcen=`nemoinp $n/2-0.5`
-#set refpix=$refcen,$refcen,$vref
-
-
-#   now assuming model is centered, as well as data cube
-set vref=`nemoinp $nvel/2+0.5`
-###set vref=`nemoinp $nvel/2-0.5`
-set refpix=$refcen,$refcen,$vref
-
-
-echo $nz $pz $vz $dz 
-echo Vsys at OBS pixel: `nemoinp "(1000*$vsys-$vz)/$dz+$pz"` 
-echo REFPIX:   $refpix
-echo REFSCALE: $refscale
-
+    
+    #   now assuming model is centered, as well as data cube
+    set vref=`nemoinp $nvel/2+0.5`
+    ###set vref=`nemoinp $nvel/2-0.5`
+    set refpix=$refcen,$refcen,$vref
+    
+    
+    echo $nz $pz $vz $dz 
+    echo Vsys at OBS pixel: `nemoinp "(1000*$vsys-$vz)/$dz+$pz"` 
+    echo REFPIX:   $refpix
+    echo REFSCALE: $refscale
+else
+    echo BUG: need to rewrite this section for when no refmap given..... since you did not
+    exit 1
+endif    
 
 #> nemo.need tabtos snaptrans snaprotate snapadd snapgrid ccdsmooth ccdmath ccdfits fitshead
 
