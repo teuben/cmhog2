@@ -15,9 +15,10 @@ string defv[] = {
   "yrat=1.02043\n  ratio of neighboring radial cell sizes",
   "dymin=\n        First dy",
   "nz=154\n        Number of angular zones (in half the grid, pi)",
-  "tol=1e-6\n      Tolerance in Newton Raphson , if needed",
   "out=\n          Optional output file with radii and cell sizes of zone edges",
-  "VERSION=1.0\n   17-jul-03",
+  "iter=20\n       Max number of iterations in Newton Raphson , if needed",
+  "tol=1e-6\n      Tolerance in Newton Raphson , if needed",
+  "VERSION=1.0\n   18-jul-03",
   NULL,
 };
 
@@ -31,7 +32,7 @@ nemo_main()
   real  ymin = getdparam("ymin");
   real  ymax = getdparam("ymax");
   real yrat, dymin, tol, yr, dfndyr, fn, deltyr, erryr, dz, nzy;
-  int i, iter, igrid;
+  int i, iter, igrid,iter_max;
   int ny = getiparam("ny");
   int nz = getiparam("nz");
   stream outf;
@@ -43,14 +44,16 @@ nemo_main()
     igrid = 2;
     dymin = getdparam("dymin");
     tol = getdparam("tol");
-    yr = 1.01;
-    for(iter=1; iter<20; iter++) {
+    iter_max = getiparam("iter");
+    yr = pow(ymax/ymin, 1.0/ny);    /* good initial guess */
+    for(iter=1; iter<iter_max; iter++) {
       fn = (ymax - ymin) - dymin*(pow(yr,(double)ny) - 1.0)/(yr - 1.0);
-      dfndyr =  -ny*dymin* (pow(yr,(double)ny) - 1)/(yr - 1.0)
+      dfndyr =  -ny*dymin*pow(yr,(double)(ny - 1))/(yr - 1.0)
 	+ dymin*(pow(yr,(double)ny) - 1.0)/sqr(yr - 1.0);
       deltyr  = -fn/dfndyr;
       erryr  = ABS(deltyr/yr);
       yr += deltyr;
+      dprintf(2,"iter: %d %g %g\n",iter,yr,erryr);
       if (erryr < tol) break;
     }
     if (erryr > tol) error("Newton-Raphson did not converge");
