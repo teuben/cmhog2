@@ -2,7 +2,7 @@
 #
 #
 
-set polar=1
+set polar=0
 set m=10
 set out=junk
 set frame=1:1000
