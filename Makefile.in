@@ -76,7 +76,7 @@ XHDFLIB = $(HDF_HOME)/libmfhdf.a $(HDF_HOME)/libdf.a \
          $(HDF_HOME)/libjpeg.a  $(HDF_HOME)/libz.1.dylib
 # Peter's braindead finked machine
 # also needed CC=/usr/bin/gcc FC=/sw/bin/g77, go figure
-# else two undefined variables are left....   xxxxFP
+# else two undefined variables are left....   restFP, saveFP
 YHDFLIB = $(HDF_HOME)/libdf.a $(HDF_HOME)/libjpeg.62.dylib  /usr/lib/libz.1.dylib
 
 CFITSIO = @CFITSIO_LIB@
