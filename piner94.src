@@ -84,7 +84,7 @@ C
       REAL*8 CENMAS
       REAL*8 RQ, FMAS, AMAS, DMAS, DDMAS, QQ, AT, AX, AY, AZ
       REAL*8 PIGROC
-      REAL*8 xpos,ypos,rpos,pot
+      REAL*8 xpos,ypos,rpos,pot,taper
       REAL   rmax
 C
       REAL*8 PI, FOURPI, GRAVC
@@ -246,11 +246,12 @@ c 	            can also choose a pattern speed overriding pgen::rl value
 		 ypos = (iy-crpix2)*cdelt2 + crval2
 		 rpos = sqrt(xpos**2+ypos**2)
 		 if (rpos.le.rtstart) then
-		   gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy)
+                   taper = 1.0
 		 else
-		   gpot0(ix,iy) = gpot0(ix,iy) + 
-     *			gpot1(ix,iy) * exp((rpos-rtstart)/rtscale)
+                   taper = exp(-(rpos-rtstart)/rtscale)
 		 endif
+                 gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy) * taper
+                 write(*,*) 'GPOT:',ix,iy,rpos,taper,gpot0(ix,iy)
  513	     CONTINUE
 	   ELSE
 	     write(*,*) 'Using pot0, quad=',quad
