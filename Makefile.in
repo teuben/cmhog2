@@ -48,13 +48,21 @@ SRC = Makefile $(COBJ) $(SOBJ) $(INC) cmhog.def cmhogin  \
 
 SPEC   = empty
 PROB   = galaxy
+
+# CPP notes:
+#	for the intel compiler, use 'gcc -E -traditional'
+#	for newer (2.96 and above) gnu, also add '-traditional'
+#       for solaris, should use /lib/cpp 
 CPP    = @CPP@
 CMFLAGS= @CMFLAGS@
 FC     = @F77@
 FFLAGS = @FFLAGS@
 CC     = @CC@
 LDFLAGS= @CFLAGS@
-#LIB    = /usr/local/lib/libdf.a /usr/lib/libz.a /usr/lib/libjpeg.a
+
+# LIB notes:
+#  for the intel compiler, add -Vaxlib
+#  for solaris, may also need to add LD_LIBRARY_PATH to environment
 LIB    = -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg
 
 

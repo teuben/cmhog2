@@ -736,41 +736,46 @@ NOTES:
 \newpage
 \subsection{Benchmark}
 
-The benchmark within {\tt cmhog} is defined as running the
-standard PST95 model through the bar growth time, 0.1Gyr,
+The  {\tt cmhog} benchmark is defined as running the
+standard PST95 model just through the bar growth time, 0.1Gyr,
 on a small $67 \times 40$ grid (see {\tt cmhogin.bench}).
 The results for a few popular machines are summarized
 in Table 1.
 
 \begin{table}[htbp]
-\caption[cmhog code benchmarks]{cmhog code Benchmarks}
+\caption[{\tt cmhog} code benchmarks]{{\tt cmhog} code benchmarks}
 \centering
 \medskip
-\begin{tabular}{|l|r|l|l|l|} \hline
-Machine      & MHz  	      & cpu(sec) & 1GHz-Rating & comments \\ 
+\begin{tabular}{|l|r|r|r|l|} \hline
+Machine      & MHz  	      & cpu(sec) & cpu/GHz & compiler/options \\ 
 &&&&  \\ \hline
-P-IV/512	& 2200	&	26.3 & 57.8 & g77 -g -O2 \\
-                &       &       20.6 &      & ifc -O \\
-P-IV		& 2000  &	29.4 & 58.8 &  \\
-P-IV		& 1800  &	32.4 & 58.3 &  \\
-P-III Coppermine & 933   &	56.6 & 52.8 & \\
-                 &       &      40.8 &      & ifc -O \\
-P-III		& 700   &	75.2 & 52.6 & \\
-P-III		& 600	&	91.1 & 54.7 & \\
- 		& 	&	65.0 &      & ifc -O \\
-P-III/512 Katmai & 500  &	106.5 & 53.3 & \\  
-Alpha EV67	& 666   &        42.7 & 28.4 & \\ % numenor
-		&	&	 42.4 &      & -ffast-math -O3 -mfp-regs \\
+P-IV/512	& 2200	&	26.3 & 57.8 & g77 -g -O2 \\  % peto
+                &       &       20.6 & 45.3 & ifc -O \\
+P-IV		& 2000  &	29.4 & 58.8 &  \\  % magus
+P-IV		& 1800  &	32.4 & 58.3 &  \\  % juno, Harrington's machine
 AMD 		& 1600  &        23.1 & 37.0  & \\ % ithil
-Ultra-SPARC-IIi &  440  &	      &      & g77 -g -O2\\   % venus
+                &       &        17.6 & 28.2  & ifc -O \\
+P-III Coppermine & 933   &	56.6 & 52.8 & \\ % grus
+                 &       &      40.8 & 38.1 & ifc -O \\
+P-III		& 700   &	75.2 & 52.6 & \\ % akash
+P-III/512 Katmai & 600	&	88.7 & 53.2 &  \\ % mensa
+P-III		& 600	&	91.1 & 54.7 & (laptop) \\ % laptop
+ 		& 	&	65.0 & 39.0 & ifc -O \\
+		&	&	93.6 & 56.2 & ifc -O compiled on Piv \\
+P-III/512 Katmai & 500  &	106.5 & 53.3 & \\  % xeon (P500 at home)
+P-II/MMX        & 233   &       321.0 & 74.8 & g77 -g -O2 \\ % peter(P233MMX at home)
+		&	&	321.6 & 74.9 & ifc -O \\
+P-I             & 166   &       496.1 & 82.4 & g77 -g -O2 \\ % saturn
+Alpha EV67	& 666   &        42.7 & 28.4 & g77/gcc \\ % numenor
+		&       &        23.8 & 15.8 & fort/ccc -fast \\
+Ultra-SPARC-IIi &  440  &	   -  &   -  & g77 -g -O2\\   % venus
 		&  	&	 66.0 & 29.0 & f77 -O \\
 		&  	&	 55.0 & 24.2 & f77 -fast \\
 Ultra-SPARC     &  167  &       128.0 & 21.4 & f77 -fast \\
  \hline
 \end{tabular}
 \end{table}
-
-A few ``2002'' comments:
+% A few ``2002'' comments:
 \begin{itemize}
 \item An Ultra-SPARC is about twice as efficient as an Intel chip.
 
@@ -778,7 +783,13 @@ A few ``2002'' comments:
 than the Pentium-iv.
 
 \item The Intel compiler is about 30-40\% more efficient compared
-to the GNU compiler.
+to the GNU compiler (and it doesn't matter if this is on an intel or AMD chip)
+
+\item There is no benefit from using a 512kB cache size 
+
+\item The Alpha is the most efficient processor per clock cycle (native compiler)
+
+\item Piv code running on a Piii chip will slow down the code considerably
 
 \end{itemize}
 
