@@ -213,10 +213,12 @@ C
 	  diskycen(j,k)=(acc(1)*cos(zcenteul(k)))
      &			  +(acc(2)*sin(zcenteul(k)))
 6        continue
+
          if (y(j).lt.rnstart) 
      &    call taper(diskyed,jn,j,ks,ke+1,y(j),rnstart,rnscale)
          if (radius(j).lt.rnstart) 
      &    call taper(diskycen,jn,j,ks,ke+1,radius(j),rnstart,rnscale)
+
          if (y(j).gt.rtstart) 
      &    call taper(diskyed,jn,j,ks,ke+1,y(j),rtstart,rtscale)
          if (radius(j).gt.rtstart) 
@@ -307,6 +309,7 @@ c            spzed(j,k)=spzed(j,k)*exp(16.0-radius(j))
 c            spzcen(j,k)=spzcen(j,k)*exp(16.0-radius(j))
 c          endif
 10     continue
+
        if (radius(j).lt.rnstart) 
      &   call taper(barzed,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
        if (radius(j).lt.rnstart) 
@@ -328,14 +331,15 @@ c
       vgz=par(1)
       vspiral=sppat-vgz
 C
-c      open (unit=7,file='spforces.dat')
-c      do 12 k=ks,ke
-c      do 12 j=js,je
-c       write (7,13) diskycen(j,k),spycen(j,k),spzcen(j,k) 
-c13     format (3e14.5) 
-c12    continue
-c      close (unit=7)
-c      stop 
+      if (.false.) then
+         open (unit=7,file='spforces.dat')
+         do 12 k=ks,ke
+            do 12 j=js,je
+               write (7,13) j,k,diskycen(j,k),spycen(j,k),spzcen(j,k) 
+ 13            format (2i5,3e14.5) 
+ 12      continue
+         close (unit=7)
+      endif
       return
       end
 c
@@ -356,9 +360,15 @@ c
       do 100 k=k1,k2
          sum1 = sum1 + a(j,k)
          sum2 = sum2 + a(j,k)*a(j,k)
+c        write(*,*) 'k=',k,a(j,k)
  100  continue
       sum1 = sum1 / real(k2-k1+1)
-      sum2 = sqrt(sum2/real(k2-k1+1) + sum1*sum1)
+      sum2 = sum2/real(k2-k1) - sum1*sum1
+      if (sum2 .lt. 0) then
+         sum2 = -sqrt(-sum2)
+      else
+         sum2 = sqrt(sum2)
+      endif
       t = exp(- (rad-r0)**2/(2*rs**2))
 
       write(*,*) 'taper ',sum1,sum2,j,k1,k2,rad,t

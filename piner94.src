@@ -252,7 +252,8 @@ c 	            can also choose a pattern speed overriding pgen::rl value
                    taper = exp(-(rpos-rtstart)**2/(2*rtscale**2))
 		 endif
 c                write(*,*) 'taper: ',ix,iy,xpos,ypos,rpos,taper
-c                gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy) * taper
+                 taper = 1.0
+                 gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy) * taper
  513	     CONTINUE
 	   ELSE
 	     write(*,*) 'Using pot0, quad=',quad
