@@ -1,0 +1,80 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(bcdflt.c)
+
+dnl Checks for programs.
+
+dnl AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
+
+
+AC_LANG_C
+
+
+AC_PROG_CC
+AC_PROG_CPP
+dnl ??? AC_REQUIRE_CPP
+AC_PROG_F77
+AC_PROG_MAKE_SET
+
+dnl Check for fortran compiler
+AC_MSG_CHECKING(whether we have a FORTRAN 77 compiler)
+AC_CHECK_PROGS(F77, f77 g77 xlf xlf77 fl32 fort77 fc cf77 frt f90 xlf90)
+AC_PROG_F77
+if test -n "$F77"; then
+  if test -n "$GCC"; then
+    AC_F77_LIBRARY_LDFLAGS
+    ACX_F77_FUNC_MANGLE
+    AC_CANONICAL_HOST
+    case $host_os in
+      ultrix*)
+        CC="$CC -Dmain=MAIN_"
+        ;;
+      osf*)
+        CC="$CC -Dmain=MAIN__"
+        ;;
+      sunos*)
+        CC="$CC -Dmain=MAIN_"
+        ;;
+    esac
+  fi
+else
+  F77="$CC"
+  fortran=no
+  AC_MSG_WARN(no FORTRAN compiler)
+fi
+
+
+dnl Check for system name
+
+case $host_os in
+      solaris*)
+        SYSTEM="SUN"
+	CMFLAGS="$CMFLAGS -DSUN"
+        ;;
+      linux*)
+        SYSTEM="LINUX"
+	CMFLAGS="$CMFLAGS -DLINUX"
+        ;;
+      unicos*)
+        SYSTEM="UNICOS"
+	CMFLAGS="$CMFLAGS -DUNICOS"
+        ;;
+
+esac
+AC_SUBST(SYSTEM)
+AC_SUBST(CMFLAGS)
+
+dnl Checks for libraries.
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(fcntl.h sys/time.h unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_INLINE
+AC_HEADER_TIME
+
+dnl Checks for library functions.
+AC_CHECK_FUNCS(mkdir select)
+
+AC_OUTPUT(Makefile cmhog.def)
