@@ -1,6 +1,7 @@
 #! /bin/csh -f
 #
 #  $Id$
+#
 #  This scripts takes an HDF output snapshot file from cmhog
 #  (bar hydro, polar coordinates), projects it to a requested
 #  sky view as to be able to compare it with an existing maps
@@ -31,7 +32,6 @@ if ($#argv == 0) then
   echo Optional parameters:  
   echo "   pa, inc, phi, rot (1=ccw)"
   echo "   rmax, n, beam, color, clean, cube, denlog"
-  echo "   nvel, vmax"
   echo "   wcs, pscale, vscale, vsys"
   echo "   par, inden"
   echo "You also need the NEMO environment"
@@ -54,10 +54,6 @@ set beam=0.25
 set color=1
 set clean=1
 set denlog=0
-
-#			Velocity gridding for cube  (nvel cells from -vmax : vmax)
-set nvel=50
-set vmax=250
 
 #                       WCS definition (and mapping) if derived from an observation (cube)
 set wcs=1
@@ -188,7 +184,8 @@ if (! -e $out.den.fits) then
 
     snaprotate $tmp.s3 - \
         "atand(tand($phi)/cosd($inc)),$inc,$pa" zyz |\
-	snapscale - $tmp.snap rscale=$hpscale vscale=$hvscale
+	snapscale - - rscale=$hpscale vscale=$hvscale |\
+	snapshift - $tmp.snap vshift=0,0,$vsys mode=sub
 
     echo -n "Projected model velocities:"
     snapprint $tmp.snap -vz | tabhist - tab=t |& grep min
@@ -209,6 +206,13 @@ if (! -e $out.den.fits) then
         object=$in comment="$comment" $wcspars 
     ccdfits $tmp.vel $out.vel.fits \
         object=$in comment="$comment" $wcspars 
+    fitsccd $refmap - | ccdmath -,$tmp.vel $tmp.diff 'ifeq(%1,0,0,ifeq(%2,0,0,%1-%2))' 
+    ccdstat $tmp.diff bad=0
+    # ccdstat $tmp.diff
+    # ccdmath $tmp.diff - 'ifeq(%1,0,-99999,%1)' | ccdstat -  min=-1000 max=1000
+    ccdfits $tmp.diff $out.diff.fits \
+	object=$in comment="$comment" $wcspars 
+    
 
     if ($clean) rm -fr $tmp.*
 else
