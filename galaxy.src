@@ -41,7 +41,7 @@ c     assumed that igrav=1 and igeom=1
       namelist /spiral/ spamp,spsc,spang,sppat,sr,pc
       namelist /pgrid/pot0,pot1,naxis1,naxis2,rmax,omega,gamma,
      *                crval1,crval2,crpix1,crpix2,cdelt1,cdelt2,
-     *                rhalo,vhalo,rtstart,rtscale
+     *                rhalo,vhalo,rtstart,rtscale,rnstart,rnscale
       ndim=3
       npar=7
       name='dummy'
@@ -62,6 +62,8 @@ c     assumed that igrav=1 and igeom=1
       vhalo=0.0
       rtstart=1000.0
       rtscale=1000.0
+      rnstart=-1000.0
+      rnscale=1000.0
       read (1,pgen)
       write(2,pgen)
       read (1,spiral)
@@ -141,7 +143,8 @@ C
 	write(*,*) 'Pattern speed omega = ',omega
 	write(*,*) 'Halo: vhalo,rhalo= ',vhalo,rhalo
 	write(*,*) 'Disk: gamma= ',gamma
-	write(*,*) 'Tapering: start,scale=',rtstart,rtscale
+	write(*,*) 'Edge tapering: start,scale=',rtstart,rtscale
+	write(*,*) 'Nucl tapering: start,scale=',rnstart,rnscale
 #else
 	write(*,*) 'Support for FITSIO was not properly encoded'
 	STOP
@@ -180,11 +183,22 @@ C
 	if (i.eq.7) par(i)=rhoc
 5     continue
 
+c        print out the grid values, both center and edges
+      if (.false.) then
+         do  101 j=js-3,je+3
+            write(*,*) 'J: ',j,radius(j),y(j)
+ 101     continue
+         do 102 k=ks-1,ke+1
+            write(*,*) 'K: ',k,zcenteul(k),z(k)
+ 102     continue
+
+      endif
+
       call inipotential(npar,par,name)
 C   
       if (nyz.gt.1) then
-	do 7 k=ks,ke+1
 	do 7 j=js-3,je+3
+	 do 6 k=ks,ke+1
           pos(1)=y(j)*cos(zcenteul(k))
 	  pos(2)=y(j)*sin(zcenteul(k))
 	  pos(3)=0.0
@@ -196,6 +210,11 @@ C
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  diskycen(j,k)=(acc(1)*cos(zcenteul(k)))
      &			  +(acc(2)*sin(zcenteul(k)))
+6        continue
+         if (y(j).lt.rnstart) 
+     &    call ntaper(diskyed,jn,j,ks,ke+1,y(j),rnstart,rnscale)
+         if (radius(j).lt.rnstart) 
+     &    call ntaper(diskycen,jn,j,ks,ke+1,radius(j),rnstart,rnscale)
 7       continue
       endif
 c
@@ -203,8 +222,8 @@ c
       call inipotential(npar,par,name)
 c
       if (nyz.gt.1) then
-	do 9 k=ks,ke+1
 	do 9 j=js-3,je+3
+	 do 8 k=ks,ke+1
           pos(1)=y(j)*cos(zcenteul(k))
 	  pos(2)=y(j)*sin(zcenteul(k))
 	  pos(3)=0.0
@@ -239,12 +258,17 @@ c          endif
 c          if (radius(j).gt.16.) then
 c            spycen(j,k)=spycen(j,k)*exp(16.0-radius(j))
 c          endif
+8        continue
+         if (y(j).lt.rnstart) 
+     &     call ntaper(baryed,jn,j,ks,ke+1,y(j),rnstart,rnscale)
+         if (radius(j).lt.rnstart) 
+     &     call ntaper(barycen,jn,j,ks,ke+1,radius(j),rnstart,rnscale)
 9       continue
       endif
-C
+C                                 (pjt - aug 2003: should the first radius not be y ??? )
       if (nzz.gt.1) then
-	do 10 j=js,je
-	do 10 k=ks-1,ke+1
+	do 11 j=js,je
+	 do 10 k=ks-1,ke+1
           pos(1)=radius(j)*cos(z(k))
 	  pos(2)=radius(j)*sin(z(k))
 	  pos(3)=0.0
@@ -271,13 +295,18 @@ c            spzed(j,k)=spzed(j,k)*exp(16.0-radius(j))
 c            spzcen(j,k)=spzcen(j,k)*exp(16.0-radius(j))
 c          endif
 10     continue
+       if (radius(j).lt.rnstart) 
+     &   call ntaper(barzed,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
+       if (radius(j).lt.rnstart) 
+     &   call ntaper(barzcen,jn,j,ks-1,ke+1,radius(j),rnstart,rnscale)
+11    continue
       endif
 c
-      do 11 k=ks,ke
-      do 11 j=js,je
+      do 20 k=ks,ke
+      do 20 j=js,je
 	d(j,k)=amp
 	w(j,k)=sqrt(abs(radius(j)*diskycen(j,k)))
-11    continue
+20    continue
       vgz=par(1)
       vspiral=sppat-vgz
 C
@@ -290,4 +319,34 @@ c12    continue
 c      close (unit=7)
 c      stop 
       return
+      end
+c
+c  the potential near the center can be tapered to something more axisymmetric
+c  below radius of rnstart a gaussian taper of scale length rnscale is applied
+c  NOTE:: it is assumed that upon  rad < r0
+c
+      subroutine ntaper(a,ny,j,k1,k2,rad,r0,rs)
+      integer ny,j,k1,k2
+      real a(ny,1),rad,r0,rs
+c
+      integer k
+      real t,sum1,sum2
+      
+      sum1 = 0.0
+      sum2 = 0.0
+
+      do 100 k=k1,k2
+         sum1 = sum1 + a(j,k)
+         sum2 = sum2 + a(j,k)*a(j,k)
+ 100  continue
+      sum1 = sum1 / real(k2-k1+1)
+      sum2 = sqrt(sum2/real(k2-k1+1) + sum1*sum1)
+      t = exp(- (rad-r0)**2/(2*rs**2))
+
+      write(*,*) 'ntaper ',sum1,sum2,j,k1,k2,rad,t
+
+      do 101 k=k1,k2
+         a(j,k) = t*a(j,k) + (1-t)*sum1
+ 101  continue
+
       end
