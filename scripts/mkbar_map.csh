@@ -24,9 +24,11 @@
 #  the sign of the galaxy angular momentum vector, where the positive
 #  Z axis points to the observer (hence doppler recession is -vz).
 #
-#   9-may-03  Derived from mkbar_cube.csh with better WCS and refmap
+#   9-may-03  1.4 Derived from mkbar_cube.csh with better WCS and refmap
+#     sep-03  1.5 added documentation
+#  10-nov-04  1.6 merged two seemingly different versions where a $ring file was added
 
-set version=9-may-03
+set version=10-nov-04
 
 if ($#argv == 0) then
   echo Usage: $0 in=HDF_DATASET out=BASENAME refmap=FITSFILE...
@@ -210,8 +212,15 @@ if (! -e $out.den.fits) then
         object=$in comment="$comment" $wcspars 
     ccdfits $tmp.vel $out.vel.fits \
         object=$in comment="$comment" $wcspars 
-    fitsccd $refmap - | ccdmath -,$tmp.vel $tmp.diff 'ifeq(%1,0,0,ifeq(%2,0,0,%1-%2))' 
+    if ($?ring) then
+     if (-e $ring) then
+      fitsccd $refmap - | ccdmath -,$tmp.vel,$ring $tmp.diff 'ifeq(%1,0,0,ifeq(%2,0,0,%1-%2))*%3' 
+     else
+      fitsccd $refmap - | ccdmath -,$tmp.vel $tmp.diff 'ifeq(%1,0,0,ifeq(%2,0,0,%1-%2))' 
+     endif
+    endif
     ccdstat $tmp.diff bad=0
+    # ccdstat $tmp.diff bad=0 win=$weight
     # ccdstat $tmp.diff
     # ccdmath $tmp.diff - 'ifeq(%1,0,-99999,%1)' | ccdstat -  min=-1000 max=1000
     ccdfits $tmp.diff $out.diff.fits \
