@@ -344,6 +344,7 @@ exists, but has not been excersized in a long time.
 
 \subsection{tsd}
 
+{\tt tsd} scans an HDF SDS :
 \footnotesize\begin{verbatim}
 % tsd hdf001bg 
 Found 3 scientific data sets in run001/hdf001bg
@@ -351,6 +352,11 @@ Found 3 scientific data sets in run001/hdf001bg
 2: PHI-VELOCITY AT TIME=1.00E-01(20,37) km/sec  -> [740 elements of type: 5 (FLOAT32)]
 3: DENSITY AT TIME=1.00E-01(20,37) Msolar/pc**2  -> [740 elements of type: 5 (FLOAT32)]
 \end{verbatim}\normalsize
+
+but can also print out data values and the coordinate system. In our case, the
+first axis is the radial coordinate, and will not be a regularly sampled axis. The
+second axis is the angular coordinate, and will be regularly samples
+(normally between $-\pi/2$ and $\pi/2$).
 
 \begin{figure}[htbp]
 \epsfysize=5cm
@@ -723,7 +729,42 @@ for more details on CVS usage}:
 	configure
 	make cmhog
 	make bench
+
+NOTES:
+	does not compile with gcc-3.0 ???
 \end{verbatim}
+
+\subsection{Benchmark}
+
+The benchmark within {\tt cmhog} is defined as running the
+standard PST95 model through the bar growth time, 0.1Gyr,
+on a small $67 \times 40$ grid (see {\tt cmhogin.bench}).
+The results for a few popular machines are summarized
+in Table 1.
+
+\begin{table}[htbp]
+\caption[cmhog code benchmarks]{cmhog code Benchmarks}
+\centering
+\medskip
+\begin{tabular}{|l|r|l|l|} \hline
+Machine      & MHz  	      & cpu(sec) & comments \\ 
+&&& \\ \hline
+
+P-IV/512	& 2200	&	26.3 & g77 -g -O2 (if not otherwise noted) \\
+                &       &       20.6 & ifc -O \\
+P-IV		& 2000  &	29.4 & \\
+P-IV		& 1800  &	32.4 & \\
+P-III Coppermine & 933   &	56.6 & \\
+                 &       &      40.8 & ifc -O \\
+P-III		& 700   &	75.2 & \\
+P-III		& 600	&	91.1 &  \\
+ 		& 	&	65.0 & ifc -O \\
+P-III/512 Katmai & 500  &	106.5 & \\
+Alpha EV67	& 666   &             & bad compiler? \\
+AMD 		& 1600  &             &   \\
+ \hline
+\end{tabular}
+\end{table}
 
 \end{document}
 
