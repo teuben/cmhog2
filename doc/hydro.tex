@@ -1059,6 +1059,8 @@ Machine & MHz
 	& K-zcs\footnote{Kilo zone-cycle per second, computed as 4416.65/cpu(sec)}
 	& compiler/options \\ 
 &&&&&  \\ \hline
+P-IV/512        & 3000  &        13.4 & 40.2  &       & ifc -O2 \\  % kuma 
+                &       &        10.4 & 31.2  & 423.5 & ifc -O2 -xW -tpp7 -ipo -i\_dynamic \\
 P-IV/512	& 2800	&	 21.5 &       &       & g77 -g -O2 \\  % chand
                 &       &        52.6 &       &       & -g \\
                 &       &        14.3 &       &       & ifc -O2 \\    
@@ -1081,6 +1083,9 @@ P-III/512 Katmai & 500  &	106.5 & 53.3  &  82.9 & \\  % xeon (P500 at home)
 P-II/MMX        & 233   &       321.0 & 74.8  &  13.7 & g77 -g -O2 \\ % peter(P233MMX at home)
 		&	&	321.6 & 74.9  &  13.7 & ifc -O \\
 P-I             & 166   &       496.1 & 82.4  &   8.9 & g77 -g -O2 \\ % saturn
+\hline
+G4              & 1400  &             &       &       &         \\ % peter's summer G4
+G4              & 1000? &        60.5 & -     &  79.9 & g77 -g -O2 \\ % eve's laptop
 \hline
 Alpha EV67	& 666   &        42.7 & 28.4  & 103.4 & g77/gcc \\ % numenor
 		&       &        23.8 & 15.8  & 185.5 & fort/ccc -fast \\
