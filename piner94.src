@@ -29,10 +29,10 @@ c  warning: can only have one 'BLOCK DATA' per program
       IMPLICIT NONE
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      REAL gomegp,rhalo,vhalo
+      REAL gomegp,rhalo,vhalo,gamma
       COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo
+     *             rhalo,vhalo,gamma
       DATA nx/0/
       DATA ny/0/
       END
@@ -48,10 +48,10 @@ C INITIALIZE THE POTENTIAL AND FORCE CALCULATIONS (after Lias INPOT)
 C
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      REAL gomegp,rhalo,vhalo
+      REAL gomegp,rhalo,vhalo,gamma
       COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo
+     *             rhalo,vhalo,gamma
       COMMON/ AREAD/FCMASS,AXIRAT,QUAD,CENDEN,RADLAG, INDEX
       REAL*8 FCMASS, AXIRAT, QUAD, CENDEN, RADLAG
       INTEGER INDEX
@@ -267,10 +267,10 @@ c----------------------------------------------------------------------
 
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
-      REAL gomegp,rhalo,vhalo
+      REAL gomegp,rhalo,vhalo,gamma
       COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo
+     *             rhalo,vhalo,gamma
 
       INTEGER ix,iy
       REAL x,y,dx,dy,x3,y3,x4,y4,x8,y8,tmp
@@ -311,6 +311,8 @@ c----------------------------------------------------------------------
      *              +( 2-x3+y4)*gpot0(ix-1,iy+1)
      *              +( 2   +y4)*gpot0(ix  ,iy+1)
      *              +( 2+x3+y4)*gpot0(ix+1,iy+1) )/(12.0*cdelt2);
+	 acc(1) = acc(1)*gamma
+	 acc(2) = acc(2)*gamma
 	 if (vhalo.gt.0.0) then
 	    tmp = -vhalo*vhalo/(pos(1)**2 + pos(2)**2 + rhalo*rhalo)
 	    acc(1) = acc(1) + pos(1)*tmp

@@ -29,7 +29,7 @@ c-----------------------------------------------------------------------
       REAL gomega
       COMMON/ggrid/nx,ny,gpot0(512,512),gpot1(512,512),grmax,gomega,
      * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2,
-     *          grhalo,gvhalo
+     *          grhalo,gvhalo,ggamma
 
       external inipotential,potential
 c\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\////////////////////////////////
@@ -129,6 +129,7 @@ C
 	gomega = omega
 	gvhalo = vhalo
 	grhalo = rhalo
+	ggamma = gamma
 	write(*,*) 'Pattern speed omega = ',omega
 	write(*,*) 'Halo: vhalo,rhalo= ',vhalo,rhalo
 	write(*,*) 'Disk: gamma= ',gamma
@@ -175,12 +176,12 @@ C
 	  pos(3)=0.0
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  diskyed(j,k)=(acc(1)*cos(zcenteul(k)))
-     &			 +(acc(2)*sin(zcenteul(k)))*gamma
+     &			 +(acc(2)*sin(zcenteul(k)))
 	  pos(1)=radius(j)*cos(zcenteul(k))
 	  pos(2)=radius(j)*sin(zcenteul(k))
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  diskycen(j,k)=(acc(1)*cos(zcenteul(k)))
-     &			  +(acc(2)*sin(zcenteul(k)))*gamma
+     &			  +(acc(2)*sin(zcenteul(k)))
 7       continue
       endif
 c
@@ -195,12 +196,12 @@ c
 	  pos(3)=0.0
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  baryed(j,k)=(acc(1)*cos(zcenteul(k)))
-     &			+(acc(2)*sin(zcenteul(k)))*gamma
+     &			+(acc(2)*sin(zcenteul(k)))
 	  pos(1)=radius(j)*cos(zcenteul(k))
 	  pos(2)=radius(j)*sin(zcenteul(k))
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  barycen(j,k)=(acc(1)*cos(zcenteul(k)))
-     &			 +(acc(2)*sin(zcenteul(k)))*gamma
+     &			 +(acc(2)*sin(zcenteul(k)))
           if (y(j).gt.sr) then
             arg=2.0*((log(y(j)-sr)/tan(spang))-zcenteul(k))+pc
             spyed(j,k)=-spamp*(y(j)-sr)**2*exp(-spsc*(y(j)-sr))*
@@ -234,12 +235,12 @@ C
 	  pos(2)=radius(j)*sin(z(k))
 	  pos(3)=0.0
 	  call potential (ndim,pos,acc,pot,dumtime)
-	  barzed(j,k)=(acc(1)*sin(z(k)))-(acc(2)*cos(z(k)))*gamma
+	  barzed(j,k)=(acc(1)*sin(z(k)))-(acc(2)*cos(z(k)))
 	  pos(1)=radius(j)*cos(zcenteul(k))
 	  pos(2)=radius(j)*sin(zcenteul(k))
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  barzcen(j,k)=(acc(1)*sin(zcenteul(k)))
-     &			 -(acc(2)*cos(zcenteul(k)))*gamma
+     &			 -(acc(2)*cos(zcenteul(k)))
           if (radius(j).gt.sr) then
             arg=2.0*((log(radius(j)-sr)/tan(spang))-z(k))+pc
             spzed(j,k)=-2.0*spamp*(radius(j)-sr)**2*
