@@ -73,6 +73,13 @@ fi
 AC_SUBST(SYSTEM)
 AC_SUBST(CMFLAGS)
 
+
+dnl Gridsize
+
+AC_ARG_WITH(pgmax, [ --with-pgmax=MAX-SIZE    max size of image], with_pgmax=$withval, with_pgmax=1024)
+PGMAX=$with_pgmax
+AC_SUBST(PGMAX)
+
 dnl Checks for libraries.
 
 FITSIO=NO_FITSIO

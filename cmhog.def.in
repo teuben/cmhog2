@@ -7,7 +7,7 @@
 #define MAX_OF_IJK     73
 #define IMG_X          500
 #define IMG_Y          500 
-#define PGMAX         1024
+#define PGMAX      @PGMAX@
 
 #define RESTART           empty
 #define GRID_GENERATOR    ggen
