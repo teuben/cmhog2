@@ -18,6 +18,8 @@ C   12-apr-01   better warning when QM exceeds the max for given AOB PJT
 C
 C   ToDO:
 C	code DACSH()
+C
+C   NOTE:   it''s not possible to use single quotes in .src files !!!
 C=======================================================================
       SUBROUTINE inipotential(npar, par, name)
 C
