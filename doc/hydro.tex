@@ -40,7 +40,7 @@
 An overview is given how to use and extend 
 the Piner, Stone \& Teuben (1995, ApJ 449, 508) hydro code
 {\tt cmhog}, and in particular how 
-HDF\footnote{{\tt cmhog} only writes the HDF4/SDS data format}
+HDF\footnote{{\tt cmhog} only writes the HDF4/SDS data format, no HDF5!}
 output data can be used with
 NEMO and MIRIAD for some basic visualization and data analysis.
 Only single runs are covered, restart runs are not discussed here.
@@ -135,72 +135,72 @@ will be dicussed later)
 \begin{itemize}
 
 \item
-{\tt pgen::aob}
+{\tt pgen/aob}
 Axis ratio $a/b$ of the bar, note it will be $> 1$.
 
 \item
-{\tt pgen::rl}
+{\tt pgen/rl}
 Lagrangian radius, in kpc. This sets the pattern speed.
 
 \item
-{\tt pgen::qm}
+{\tt pgen/qm}
 Quadropole moment, this sets the mass fraction of the bar.
 
 \item
-{\tt pgen::rhoc}
+{\tt pgen/rhoc}
 Central density, this sets 
 
 \item
-{\tt pgen::bartime}
+{\tt pgen/bartime}
 Time for the bar to (linearly) grow to full strength (in Gyr)
 
 \item
-{\tt iocon::dthdf}
+{\tt iocon/dthdf}
 Timestep for HDF (HDF4/SDS) data dumps (in Gyr)
 
 \item
-{\tt icon::dtmovie }
+{\tt icon/dtmovie }
 Timestep for {\tt mde/mvt/mvr} data dumps (in Gyr). These are
 not very useful actually, they are 8 bit deep. If set to 0
 (the default) none will be produced.
 
 \item
-{\tt icon::dthist}
+{\tt icon/dthist}
 Timestep in {\tt history} file (in Gyr)
 
 \item
-{\tt hycon::tlim}
+{\tt hycon/tlim}
 Stop time of the integration (in Gyr)
 
 
 \item
-{\tt pgrid::pot0}
+{\tt pgrid/pot0}
 A fits file that contains the axisymmetric part of the potential
 on a grid.
 Length units must be kpc, and the potential must be defined
 on the whole grid, in particular out
-to a radius of {\tt ggen2::ymax} kpc.
+to a radius of {\tt ggen2/ymax} kpc.
 
 \item
-{\tt pgrid::pot1}
+{\tt pgrid/pot1}
 A fits file that contains the non-axisymmetric part of the potential
 on a grid.
 Length units must be kpc.
 
 \item
-{\tt pgrid::omega}
-Pattern speed if you want to override the value derived from pgen::rl
+{\tt pgrid/omega}
+Pattern speed if you want to override the value derived from {\tt pgen/rl}
 
 \item
-{\tt pgrid::vhalo}
+{\tt pgrid/vhalo}
 Background (softened isothermal) halo potential asymptotic velocity.
 
 \item
-{\tt pgrid::rhalo}
+{\tt pgrid/rhalo}
 Background (softened isothermal) halo potential core radius.
 
 \item
-{\tt pgrid::gamma}
+{\tt pgrid/gamma}
 Scaling factor for the grid potential. This acts like an M/L factor,
 but is only used when a halo (vhalo>0) is used.
 Once the halo is added  this 
@@ -208,7 +208,7 @@ gamma factor can be used to determine the amount of the
 disk contribution w.r.t. maximum disk.
 
 \item
-{\tt pgrid::nx ,pgrid::ny}
+{\tt pgrid/nx ,pgrid/ny}
 Setting only these will generate an internal grid, instead of the
 external grid on pot0/pot1. It's really a cheat and meant for 
 debugging potentials.
@@ -238,18 +238,18 @@ We suggest the following procedures, mirroring the {\tt igrid=1} and
 
 \begin{enumerate}
 \item
-choose  {\tt ggen2::ymin} = $y_{min}$, the inner radial 
+choose  {\tt ggen2/ymin} = $y_{min}$, the inner radial 
 boundary of the grid (in kpc). We normally choose 0.1
 
 \item
-choose {\tt ggen2::ymax} = $y_{max}$, the outer radial 
+choose {\tt ggen2/ymax} = $y_{max}$, the outer radial 
 boundary of the grid (in kpc). We normally choose 16.
 
 \item
-choose {\tt ggen2::nbl} = $N_y$, the number of radial zones.
+choose {\tt ggen2/nbl} = $N_y$, the number of radial zones.
 
 \item
-choose {\tt ggen2::yrat} = $f$, it should be a little over 1,
+choose {\tt ggen2/yrat} = $f$, it should be a little over 1,
 probably around
 $$
 	 f \approx {y_{max} \over y_{min}}^{1/{N_y}}
@@ -258,7 +258,7 @@ this formulae is based on a simple geometric growth of the cell edges, in realit
 it are the cell sizes that grow geometrically with $f$.
 
 \item
-Compute {\tt ggen3::nbl} = $N_z$, the number of angular zones, such that cells are 
+Compute {\tt ggen3/nbl} = $N_z$, the number of angular zones, such that cells are 
 close to being square from the following relationship that equates the angular
 and radial zone size near at inner boundary:
 $$
@@ -273,10 +273,10 @@ square enough for large enough $N$.
 An alternative is to find the value of $f$ that results in an exact integer
 value. For this a Newton-Raphson search is needed (see below). 
 \item
-Set {\tt ggen3::zmax} = $z_{max}$  to $\pi/2$ for a half-symmetric plane.
+Set {\tt ggen3/zmax} = $z_{max}$  to $\pi/2$ for a half-symmetric plane.
 
 \item
-Set {\tt ggen3::zmin} = $z_{min}$ to $-\pi/2$ for a half-symmetric plane.
+Set {\tt ggen3/zmin} = $z_{min}$ to $-\pi/2$ for a half-symmetric plane.
 
 
 \end{enumerate}
@@ -299,26 +299,26 @@ from which then {\tt yrat} can be computed:
 
 \begin{enumerate}
 \item
-choose  {\tt ggen2::ymin} = $y_{min}$, the inner boundary of the grid (in kpc).
+choose  {\tt ggen2/ymin} = $y_{min}$, the inner boundary of the grid (in kpc).
 We normally choose 0.1
 
 \item
-choose {\tt ggen2::ymax} = $y_{max}$, the outer boundary of the grid (in kpc).
+choose {\tt ggen2/ymax} = $y_{max}$, the outer boundary of the grid (in kpc).
 We normally choose 16.
 
 \item
-choose {\tt ggen3::nbl} = $N_z$, the number of angular zones
+choose {\tt ggen3/nbl} = $N_z$, the number of angular zones
 
 \item
-choose {\tt ggen2::nbl} = $N_y$, the number of radial zones.
+choose {\tt ggen2/nbl} = $N_y$, the number of radial zones.
 
 \item
-set {\tt ggen2::dymin} from the requirement that the grid should
+set {\tt ggen2/dymin} from the requirement that the grid should
 be close to square, i.e.
 $$
    dy_{min} = {  {\pi y_{min}} \over N_z}.
 $$
-Compute {\tt ggen2::yrat} = $f$, by solving for
+Compute {\tt ggen2/yrat} = $f$, by solving for
 
 $$
    {{\pi y_{min}} \over N_z} = (y_{max}-y_{min}) { {f-1} \over {f^{N_y}-1} }
@@ -331,11 +331,10 @@ make $f$ much different than one, this uncancelled error can become
 significant.  
 
 \item
-Set {\tt ggen3::zmax} = $z_{max}$  to $\pi/2$ for a half-symmetric plane.
+Set {\tt ggen3/zmax} = $z_{max}$  to $\pi/2$ for a half-symmetric plane.
 
 \item
-Set {\tt ggen3::zmin} = $z_{min}$ to $-\pi/2$ for a half-symmetric plane.
-
+Set {\tt ggen3/zmin} = $z_{min}$ to $-\pi/2$ for a half-symmetric plane.
 
 \end{enumerate}
 
