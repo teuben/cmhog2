@@ -248,7 +248,7 @@ c 	            can also choose a pattern speed overriding pgen::rl value
 		 if (rpos.le.rtstart) then
                    taper = 1.0
 		 else
-                   taper = exp(-(rpos-rtstart)/rtscale)
+                   taper = exp(-(rpos-rtstart)**2/(2*rtscale**2))
 		 endif
                  gpot0(ix,iy) = gpot0(ix,iy) + gpot1(ix,iy) * taper
  513	     CONTINUE
