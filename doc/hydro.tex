@@ -748,7 +748,7 @@ in Table 1.
 \begin{tabular}{|l|r|l|l|l|} \hline
 Machine      & MHz  	      & cpu(sec) & 1GHz-Rating & comments \\ 
 &&&&  \\ \hline
-P-IV/512	& 2200	&	26.3 & 57.8 & g77 -g -O2 (if not otherwise noted) \\
+P-IV/512	& 2200	&	26.3 & 57.8 & g77 -g -O2 \\
                 &       &       20.6 &      & ifc -O \\
 P-IV		& 2000  &	29.4 & 58.8 &  \\
 P-IV		& 1800  &	32.4 & 58.3 &  \\
@@ -766,6 +766,18 @@ Ultra-SPARC-IIi &  440  &	      &      & g77 -g -O2\\
  \hline
 \end{tabular}
 \end{table}
+
+A few ``2002'' comments:
+\begin{itemize}
+\item An Ultra-SPARC is about twice as efficient as an Intel chip.
+
+\item The Pentium-iii is about 10-15\% more efficient per clock cycle
+than the Pentium-iv.
+
+\item The Intel compiler is about 30-40\% more efficient compared
+to the GNU compiler.
+
+\end{itemize}
 
 \end{document}
 
