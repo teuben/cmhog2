@@ -8,6 +8,7 @@ set out=junk
 set frame=1:1000
 set var=den
 set digits=4
+set animate=1
 
 foreach _arg ($*)
    set $_arg
@@ -36,7 +37,7 @@ foreach i (`nemoinp $frame format=$format`)
   else
    hdfgrid $in - zvar=$var xrange=$r yrange=$r | ccdfits - $out radecvel=t
   endif
-  mirds9 $out
+  if ($animate) mirds9 $out
 end
 
 #  glue them together into a giant
