@@ -6,6 +6,7 @@ set polar=1
 set m=10
 set out=junk
 set frame=1:1000
+set var=3
 
 foreach _arg ($*)
    set $_arg
@@ -28,9 +29,9 @@ foreach i (`nemoinp $frame format=%03d`)
   set in=hdf${i}bg
   set out=junk$nnn.fits
   if ($polar) then
-   sdsfits $in $out 3
+   sdsfits $in $out $var
   else
-   hdfgrid $in - 3 xrange=$r yrange=$r | ccdfits - $out
+   hdfgrid $in - $var xrange=$r yrange=$r | ccdfits - $out
   endif
   mirds9 $out
 end
