@@ -836,6 +836,7 @@ Machine & MHz
 &&&&&  \\ \hline
 P-IV/512	& 2200	&	 26.3 & 57.8  &  76.4 & g77 -g -O2 \\  % peto
                 &       &        20.6 & 45.3  &  97.5 & ifc -O \\
+		&       &        33.5 &       &       & ifc -O2 -mp \\
 P-IV		& 2000  &	 29.4 & 58.8  &  75.1 &  \\  % magus
 P-IV		& 1800  &	 32.4 & 58.3  &  75.8 &  \\  % juno, Harrington's machine
 AMD 		& 1600  &        23.1 & 37.0  & 119.4 & \\ % ithil
@@ -886,6 +887,17 @@ to the GNU compiler (and it doesn't matter if this is on an intel or AMD chip)
 \item Piv code running on a Piii chip will slow down the code considerably
 
 \end{itemize}
+
+\begin{verbatim}
+ratio of gnuy to intel compiler on a Piv/2.2
+
+ nphi    gnu    intel
+  20    4.10     3.31
+  40   26.43    21.08
+  80  201.9    161.32
+ 154
+
+\end{verbatim}
 
 \end{document}
 

@@ -8,5 +8,22 @@
 
 - setenv LD_LIBRARY_PATH /local/lib on e.g. astr.dept.
 
-- gnu compiler on e.g. sun needs to use the 
-	cvmgt.src instead of bad SUN macro
+- native compiler on solaris
+	setenv CC cc
+	setenv F77 f77
+	setenv CPP /lib/cpp	
+	setenv CFLAGS -fast
+	setenv FFLAGS -fast
+	configure
+	make cmhog
+	setenv LD_LIBRARY_PATH /local/lib 
+
+- gnu compiler on solaris:
+
+- intel compiler on linux
+	setenv CC icc
+	setenv F77 ifc
+	setenv CPP "gcc -E -traditional"
+	configure
+	make cmhog
+make 
