@@ -27,7 +27,7 @@ c      implicit NONE
 #include "field.h"
 #include "root.h"
 c #include "scratch.h"
-      character*8  filename
+      character*9  filename
 c
       integer  i,j,k,rank,shape(3),ret,nyd,nzd
       real data(jn*kn),yscale(jn),zscale(kn)

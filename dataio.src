@@ -52,8 +52,8 @@ c  restart dump
 c
 c      if (iswres .eq. 1) then
 c        call msave
-c        incr = strtoi(resfile,4,6) + 1
-c        write(resfile,"(a3,i3.3,a2)") 'res',incr,id
+c        incr = strtoi(resfile,4,7) + 1
+c        write(resfile,"(a3,i4.4,a2)") 'res',incr,id
 c        iswres=0
 c      endif
 c
@@ -61,19 +61,19 @@ c  HDF dump
 c
       if (iswhdf .eq. 1) then
         call hdfall(hdffile)
-        incr = strtoi(hdffile,4,6) + 1
-        write(hdffile,"(a3,i3.3,a2)") 'hdf',incr,id
+        incr = strtoi(hdffile,4,7) + 1
+        write(hdffile,"(a3,i4.4,a2)") 'hdf',incr,id
         iswhdf=0
       endif
 c
       if (iswmov .eq. 1) then
         call movie(movfile1,movfile2,movfile3)
-        incr = strtoi(movfile1,4,6) + 1
-        write(movfile1,"(a3,i3.3,a2)") 'mde',incr,id
-        incr = strtoi(movfile2,4,6) + 1
-        write(movfile2,"(a3,i3.3,a2)") 'mvr',incr,id
-        incr = strtoi(movfile3,4,6) + 1
-        write(movfile3,"(a3,i3.3,a2)") 'mvt',incr,id
+        incr = strtoi(movfile1,4,7) + 1
+        write(movfile1,"(a3,i4.4,a2)") 'mde',incr,id
+        incr = strtoi(movfile2,4,7) + 1
+        write(movfile2,"(a3,i4.4,a2)") 'mvr',incr,id
+        incr = strtoi(movfile3,4,7) + 1
+        write(movfile3,"(a3,i4.4,a2)") 'mvt',incr,id
         iswmov=0
       endif
 c

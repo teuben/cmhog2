@@ -9,7 +9,7 @@ c-----------------------------------------------------------------------
 #include "grid.h"
 #include "field.h"
 #include "root.h"
-      character*8  filename,filename1,filename2,filename3
+      character*9  filename,filename1,filename2,filename3
       character*1  image(icartx,icarty)
 c
 c

@@ -55,6 +55,6 @@ c  hdffile = hdf     file name
 c  resfile = restart file name
 c  id      = two letter problem tag appended to file names
 c
-      character*8 hdffile, resfile, movfile1,movfile2,movfile3
+      character*9 hdffile, resfile, movfile1,movfile2,movfile3
       character*2 id
       common /rootch/ hdffile, movfile1,movfile2,movfile3, resfile, id
