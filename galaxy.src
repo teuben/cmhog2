@@ -76,7 +76,11 @@ C
 	call ftgkye(flun,'CDELT1',cdelt1,comment,status)
 	call ftgkye(flun,'CDELT2',cdelt2,comment,status)
 	write(*,*) 'ftopen: ',status,errtxt,naxis1,naxis2
-	write(*,*) 'wcs',crpix1,crpix2,crval1,crval2,cdelt1,cdelt2
+	write(*,*) 'X-range: ',(1-crpix1)*cdelt1+crval1,' ...',
+     *                    (naxis1-crpix1)*cdelt1+crval1,' kpc.'
+	write(*,*) 'Y-range: ',(1-crpix2)*cdelt2+crval2,' ...',
+     *                    (naxis2-crpix2)*cdelt2+crval2,' kpc.'
+	write(*,*) '(wcs: ',crpix1,crpix2,crval1,crval2,cdelt1,cdelt2,')'
 	call ftclos(flun,status)
 	call ftgerr(status,errtxt)
 	write(*,*) 'ftclos: ',status,errtxt
