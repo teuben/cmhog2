@@ -127,7 +127,11 @@ C
 	gcdelt2 = cdelt2
 	grmax = 0.0
 	gomega = omega
-	write(*,*) 'Pattern speed omega = ',omega
+	gvhalo = vhalo
+	grhalo = rhalo
+	write(*,*) 'Pattern speed omega = ',omega,
+	write(*,*) 'Halo: vhalo,rhalo= ',vhalo,rhalo
+	write(*,*) 'Disk: gamma= ',gamma
 C
 C  the send mode of using 'pgrid' is setting the number of pixels of the grid,
 C  and an internal grid is computed exactly from the analytical potential
