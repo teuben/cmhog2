@@ -166,6 +166,7 @@ C
 	gcdelt2 = cdelt2
 	grmax = rmax
 	gomega = omega
+        ggamma = gamma
 	write(*,*) 'Pattern speed omega = ',omega
       endif
 C
