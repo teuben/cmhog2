@@ -1,5 +1,6 @@
 #! /bin/csh -f
 #
+#  $Id$
 #  This scripts takes an HDF output snapshot file from cmhog
 #  (bar hydro, polar coordinates), projects it to a requested
 #  sky view as to be able to compare it with an existing maps
