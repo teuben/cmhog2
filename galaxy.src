@@ -129,7 +129,7 @@ C
 	gomega = omega
 	gvhalo = vhalo
 	grhalo = rhalo
-	write(*,*) 'Pattern speed omega = ',omega,
+	write(*,*) 'Pattern speed omega = ',omega
 	write(*,*) 'Halo: vhalo,rhalo= ',vhalo,rhalo
 	write(*,*) 'Disk: gamma= ',gamma
 C

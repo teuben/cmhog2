@@ -22,3 +22,12 @@ September 2002:
 	 $pgrid $ 
     is needed in cmhogin. 
     a potential on a grid can now be read in, and gas   (TODO)
+
+April 2003:
+    piner94.src : added vhalo,rhalo to  /pgrid/
+    
+
+
+Known problems:
+
+- numeric grid potential from barred potential not stable enough
