@@ -169,12 +169,14 @@ Stop time of the integration (in Gyr)
 
 \item
 {\tt pgrid::pot0}
-A fits file that contains the axisymmetric part of the potential. 
+A fits file that contains the axisymmetric part of the potential
+on a grid.
 Length units must be kpc.
 
 \item
 {\tt pgrid::pot1}
-A fits file that contains the non-axisymmetric part of the potential. 
+A fits file that contains the non-axisymmetric part of the potential
+on a grid.
 Length units must be kpc.
 
 \item
@@ -183,11 +185,15 @@ Pattern speed if you want to override the value derived from pgen::rl
 
 \item
 {\tt pgrid::gamma}
-Scaling factor for the grid potential. This acts like a M/L factor.
+Scaling factor for the grid potential. This acts like an M/L factor.
+Once the halo is added (parameters have not been implemented), this
+gamma factor can be used to determine the amount of the
+disk contribution w.r.t. maximum disk.
 
 \item
 {\tt pgrid::nx ,pgrid::ny}
-
+Setting only these will generate an internal grid, instead of the
+external grid on pot0/pot1.
 
 
 \end{itemize}
