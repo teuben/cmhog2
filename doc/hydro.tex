@@ -111,10 +111,9 @@ current directory when {\tt cmhog} starts to run (see also
 
 \end{verbatim}
 
-When {\tt cmhog} finishes, the file {\tt cmhogout} will reflect the status
-of the namelist, but you cannot re-use it (Jim, why is that??? why is the
-format of cmhogin and cmhogout different???)
-
+When {\tt cmhog} finishes, the file {\tt cmhogout} will reflect the full
+status of the namelist, not just the variables entered via the {\tt cmhogin}
+file.
 
 The most common ones to modify are (geometry in {\tt ggen2} and {\tt ggen3}
 will be dicussed later)
@@ -283,7 +282,7 @@ Input namelist, that controls the program.
 
 \item
 {\tt cmhogout}
-Output namelist, not used for anything?
+Output namelist, reflects current state of all variables.
 
 \item
 {\tt history}
@@ -295,7 +294,7 @@ outer boundaries etc.etc.
 {\tt hdfXXXbg}
 Full HDF dataset, in SDS format (Scientific Data Set), typically
 with three named ``fields'': the 
-{\tt R-VELOCITY}, {\tt PHI-VELOCITY}, and {\tt DENSITY-VELOCITY}.
+{\tt R-VELOCITY}, {\tt PHI-VELOCITY}, and {\tt DENSITY}.
 The NEMO program {\tt tsd} will display the contents of
 such SDS files. Each file contains information for one timestep.
 {\tt hdf000bf} is normally the first one, for $t=0$ at the beginning
@@ -310,7 +309,7 @@ Sample X-Y gridded density in a 8bit deep image
 Sample X-Y gridded radial velocity in a 8bit deep image
 
 \item
-{\tt mdvtXXXbg}
+{\tt mvtXXXbg}
 Sample X-Y gridded tangential in a 8bit deep image
 
 \end{itemize}
@@ -746,22 +745,24 @@ in Table 1.
 \caption[cmhog code benchmarks]{cmhog code Benchmarks}
 \centering
 \medskip
-\begin{tabular}{|l|r|l|l|} \hline
-Machine      & MHz  	      & cpu(sec) & comments \\ 
-&&& \\ \hline
-
-P-IV/512	& 2200	&	26.3 & g77 -g -O2 (if not otherwise noted) \\
-                &       &       20.6 & ifc -O \\
-P-IV		& 2000  &	29.4 & \\
-P-IV		& 1800  &	32.4 & \\
-P-III Coppermine & 933   &	56.6 & \\
-                 &       &      40.8 & ifc -O \\
-P-III		& 700   &	75.2 & \\
-P-III		& 600	&	91.1 &  \\
- 		& 	&	65.0 & ifc -O \\
-P-III/512 Katmai & 500  &	106.5 & \\
-Alpha EV67	& 666   &             & bad compiler? \\
-AMD 		& 1600  &             &   \\
+\begin{tabular}{|l|r|l|l|l|} \hline
+Machine      & MHz  	      & cpu(sec) & 1GHz-Rating & comments \\ 
+&&&&  \\ \hline
+P-IV/512	& 2200	&	26.3 & 57.8 & g77 -g -O2 (if not otherwise noted) \\
+                &       &       20.6 &      & ifc -O \\
+P-IV		& 2000  &	29.4 & 58.8 &  \\
+P-IV		& 1800  &	32.4 & 58.3 &  \\
+P-III Coppermine & 933   &	56.6 & 52.8 & \\
+                 &       &      40.8 &      & ifc -O \\
+P-III		& 700   &	75.2 & 52.6 & \\
+P-III		& 600	&	91.1 & 54.7 & \\
+ 		& 	&	65.0 &      & ifc -O \\
+P-III/512 Katmai & 500  &	106.5 & 53.3 & \\
+Alpha EV67	& 666   &             &      & bad compiler? \\
+AMD 		& 1600  &             &      & \\
+Ultra-SPARC-IIi &  440  &	      &      & g77 -g -O2\\
+		&  	&	 66.0 & 29.0 & f77 -O \\
+		&  	&	 55.0 & 24.2 & f77 -fast \\
  \hline
 \end{tabular}
 \end{table}
