@@ -1,3 +1,3 @@
-
+8-aug-2003    internal grids (naxis1,naxis2,rmax) now work again
 7-aug-2003    changed i3.3 format i4.4, filenames are not character*9
 1-aug-2003    added pgrid::rtstart,rtscale for pot1
