@@ -39,7 +39,9 @@
 
 An overview is given how to use and extend 
 the Piner, Stone \& Teuben (1995, ApJ 449, 508) hydro code
-{\tt cmhog}, and in particular how HDF output data can be used with
+{\tt cmhog}, and in particular how 
+HDF\footnote{{\tt cmhog} only writes the HDF4/SDS data format}
+output data can be used with
 NEMO and MIRIAD for some basic visualization and data analysis.
 Only single runs are covered, restart runs are not discussed.
 
@@ -154,7 +156,7 @@ Time for the bar to (linearly) grow to full strength (in Gyr)
 
 \item
 {\tt iocon::dthdf}
-Timestep for HDF data dumps (in Gyr)
+Timestep for HDF (HDF4/SDS) data dumps (in Gyr)
 
 \item
 {\tt icon::dtmovie }
@@ -352,7 +354,7 @@ outer boundaries etc.etc.
 
 \item
 {\tt hdfXXXbg}
-Full HDF dataset, in SDS format (Scientific Data Set), typically
+Full HDF dataset, in HDF4/SDS format (Scientific Data Set), typically
 with three named ``fields'': the 
 {\tt R-VELOCITY}, {\tt PHI-VELOCITY}, and {\tt DENSITY}.
 The NEMO program {\tt tsd} will display the contents of
@@ -435,6 +437,22 @@ Logarithmic density in cartesian coordinates:\newline
   \tt \% hdfgrid hdf200bg - 3 | ccdmath - - 'log(\%1)' | ccdplot - yapp=den.ps/vps\newline
 }
 \end{figure}
+
+Here is an example of getting the ``rotation curve'' from T=0. First we need to run
+{\tt tsd} again, just to confirm how many radii we have, in this case the 2nd
+dimension listed in the output of the arrays.
+
+\footnotesize\begin{verbatim}
+
+% tsd hdf000bg
+Found 3 scientific data sets in hdf000bg
+1: R-VELOCITY AT TIME=0.00E+00(40,67) km/sec  -> [2680 elements of type: 5 (FLOAT32)]
+2: PHI-VELOCITY AT TIME=0.00E+00(40,67) km/sec  -> [2680 elements of type: 5 (FLOAT32)]
+3: DENSITY AT TIME=0.00E+00(40,67) Msolar/pc**2  -> [2680 elements of type: 5 (FLOAT32)]
+% tsd hdf000bg - coord=t | head -67 | tabplot - 1 4
+
+\end{verbatim}\normalsize
+
 
 \subsection{sdsfits}
 
