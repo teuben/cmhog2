@@ -223,7 +223,7 @@ c	nx = 0
 	      DO 511 ix=1,nx
 		 xpos = (ix-crpix1)*cdelt1 + crval1
 		 ypos = (iy-crpix2)*cdelt2 + crval2
-		 CALL PISOB(ypos, xpos, 0.0d0, pot)		 
+		 CALL PISOB(ypos, xpos, 0.0d0, pot)
 		 gpot(ix,iy) = pot
  511	      CONTINUE
  512	   CONTINUE
@@ -254,18 +254,20 @@ c----------------------------------------------------------------------
 	
    
       IF(nx.gt.0) THEN
-	 x = (pos(1)-crval1)/cdelt1 + crpix1
-	 y = (pos(2)-crval2)/cdelt2 + crpix2
-	 ix = nint(x)
-	 iy = nint(y)
-	 dx=x-ix
-	 dy=y-ix
+	 x = (pos(1)-crval1)/cdelt1 + crpix1 - 0.5
+	 y = (pos(2)-crval2)/cdelt2 + crpix2 - 0.5
+	 ix = nint(x-0.5)
+	 iy = nint(y-0.5)
+	 dx=x-ix-0.5
+	 dy=y-iy-0.5
 	 x3=3*dx
 	 y3=3*dy
 	 x4=4*dx
 	 y4=4*dy
 	 x8=2*x4
 	 y8=2*y4
+	 ix=ix+1
+	 iy=iy+1
 	 pot = gpot(ix,iy)
          acc(1) = -( (-2+x4+y3)*gpot(ix-1,iy-1)
      *              +(  -x8   )*gpot(ix  ,iy-1)
@@ -275,7 +277,7 @@ c----------------------------------------------------------------------
      *              +( 2+x4   )*gpot(ix+1,iy)
      *              +(-2+x4-y3)*gpot(ix-1,iy+1)
      *              +(  -x8   )*gpot(ix  ,iy+1)
-     *              +( 2+x4+y3)*gpot(ix+1,iy+1) )/(12.0*dx);
+     *              +( 2+x4+y3)*gpot(ix+1,iy+1) )/(12.0*cdelt1);
 
 	 acc(2) = -( (-2+x3+y4)*gpot(ix-1,iy-1)
      *              +(-2   +y4)*gpot(ix  ,iy-1)
@@ -285,14 +287,18 @@ c----------------------------------------------------------------------
      *              +(     -y8)*gpot(ix+1,iy)
      *              +( 2-x3+y4)*gpot(ix-1,iy+1)
      *              +( 2   +y4)*gpot(ix  ,iy+1)
-     *              +( 2+x3+y4)*gpot(ix+1,iy+1) )/(12.0*dy);
+     *              +( 2+x3+y4)*gpot(ix+1,iy+1) )/(12.0*cdelt2);
 c	 write(*,*) 'grid: ',pos(1),pos(2),pot,acc(1),acc(2)
 c	 write(*,*) ' c  : ',ix,iy,x,y
-c        write(*,*) ' d  : ',dx,dy,x3,y3,x4,y4,x8,y8
+c        write(*,*) ' d  : ',dx,dy,x3,x4,x8,y3,y4,y8
 c-----------------------------------------------------------------------
 c      write(*,*) 'p: ',gpot(ix-1,iy+1),gpot(ix,iy+1),gpot(ix+1,iy+1)
 c      write(*,*) 'p: ',gpot(ix-1,iy  ),gpot(ix,iy  ),gpot(ix+1,iy )
 c      write(*,*) 'p: ',gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
+c      write(*,101) gpot(ix-1,iy+1),gpot(ix,iy+1),gpot(ix+1,iy+1)
+c      write(*,101) gpot(ix-1,iy  ),gpot(ix,iy  ),gpot(ix+1,iy )
+c      write(*,101) gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
+ 101  format('p: ',3f11.2)
 	 RETURN
       ENDIF
       acc(1) = 0.0
