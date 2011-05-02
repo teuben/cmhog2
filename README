@@ -1,6 +1,6 @@
 This is 'cmhog', revision 2 (cmhog2). A PPM code to simulate the 2D gas
 flow in a barred galaxy. It is based on the code Piner, Stone and Teuben
-published in their 1995 (ApJ xxx,yyy) article.
+published in their 1995 (ApJ 449, 508) article.
 
 Although the code stands alone, it is useful to have the MIRIAD, and
 especially, NEMO package around. See hydro.tex in the documentation
@@ -25,6 +25,10 @@ September 2002:
 
 April 2003:
     piner94.src : added vhalo,rhalo to  /pgrid/
+
+May 2011:
+    Kim et al. (2011) paper report a sign error in the bar component
+    of the azimuthal force.
     
 
 
