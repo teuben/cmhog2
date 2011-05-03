@@ -29,6 +29,7 @@ April 2003:
 May 2011:
     Kim et al. (2011) paper report a sign error in the bar component
     of the azimuthal force.
+    gfortran need $end at the end of each line in the 'cmhogin' file.
     
 
 
