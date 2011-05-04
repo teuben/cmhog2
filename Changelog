@@ -1,3 +1,4 @@
+ 2-may-2011   fixed up for the errors in azimuthal force and bar angle
 28-sep-2003   cleaned up a lot of testing the tapering code
 19-aug-2003   alternate tapering for edge using same as nuclear
 11-aug-2003   nuclear tapering (rnstart,rnscale) in the Y-Z (polar) grid
