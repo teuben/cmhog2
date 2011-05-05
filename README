@@ -4,7 +4,7 @@ published in their 1995 (ApJ 449, 508) article.
 
 Although the code stands alone, it is useful to have the MIRIAD, and
 especially, NEMO package around. See hydro.tex in the documentation
-tree for suggestions how to use the code.
+tree for suggestions how to use the code with these utilities.
 
 Some of the tools may be reproduced in $NEMO/src/image/hdf/cmhog, although
 we attempt to keep the two synchronized
@@ -27,12 +27,23 @@ April 2003:
     piner94.src : added vhalo,rhalo to  /pgrid/
 
 May 2011:
-    Kim et al. (2011) paper report a sign error in the bar component
-    of the azimuthal force.
-    gfortran need $end at the end of each line in the 'cmhogin' file.
-    
+    - Kim et al. (2011) paper report a sign error in the bar component
+      of the azimuthal force.
+      Equally so, the bar was placed along the X axis, not the Y axis
+      as was intended.
+      This unfortuitous combination of errors made the hydro flow 
+      look just about right....
 
+    - gfortran needs $end at the end of each line in the 'cmhogin' file.
+      It is possible this still works with g77.
+
+    - we keep two variables, hardcoded, that can be tweeked back to the
+      pre-2011 version of the code:
+
+      	       signerr = 1          (in galaxy.src)
+	       balongy = .FALSE.    (in piner94.src)
 
 Known problems:
 
 - numeric grid potential from barred potential not stable enough
+  (could this also be related to the azimuthal force issue?)
