@@ -365,6 +365,26 @@ C
  12      continue
          close (unit=7)
       endif
+c
+c a few probes
+c
+      if (.false.) then
+         pos(1) = 3.0
+         pos(2) = 3.0
+         pos(3) = 0.0
+         call potential (ndim,pos,acc,pot,dumtime)
+         write(*,*) 'Potential/Forces at (3,3): ', pot,acc(1),acc(2)
+c
+         j=42
+         k=30
+         write(*,*) 'rad,phi: ',j,k,radius(j), z(k)
+         write(*,*) 'grid force rad,phi: ',barycen(j,k),barzcen(j,k)
+c
+         j=42
+         k=10
+         write(*,*) 'rad,phi: ',j,k,radius(j), z(k)
+         write(*,*) 'grid force rad,phi: ',barycen(j,k),barzcen(j,k)
+      endif
       return
       end
 c

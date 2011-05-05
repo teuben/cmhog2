@@ -371,7 +371,6 @@ c        write(*,101) gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
 c			note exchanged X and Y, since their bar
 c			is along the Y axis, ours along the X
 C                       Note the FISOB/PISOB routines place bar along Y
-      balongy = .FALSE.
       IF (balongy) THEN
 c       fix bar along Y
         CALL FISOB(pos(1), pos(2), pos(3), acc(1), acc(2), acc(3))
