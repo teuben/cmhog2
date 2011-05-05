@@ -21,7 +21,7 @@ c-----------------------------------------------------------------------
       integer i,j,k,ndim,npar
       real arg
       character name*5, pot0*80, pot1*80, errtxt*40,comment*80
-      real crval1,crval2,crpix1,crpix2,cdelt1,cdelt2
+      real crval1,crval2,crpix1,crpix2,cdelt1,cdelt2,signerr
       real*8 amp,amode,n,aob,qm,rhoc
       real*8 par(8),pos(3),acc(3),pot,dumtime
       integer flun,bsize,status,rwmode,naxes(2)
@@ -30,10 +30,11 @@ c-----------------------------------------------------------------------
       INTEGER nx,ny
       REAL gpot0,gpot1,gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2
       REAL gomega,grtstart,grtscale
+      LOGICAL balongy
       COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
      *          grmax,gomega,
      * 		gcrpix1,gcrpix2,gcdelt1,gcdelt2,gcrval1,gcrval2,
-     *          grhalo,gvhalo,ggamma,grtstart,grtscale
+     *          grhalo,gvhalo,ggamma,grtstart,grtscale,balongy
 
       external inipotential,potential
 c\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\////////////////////////////////
@@ -76,6 +77,14 @@ c     assumed that igrav=1 and igeom=1
       write(2,spiral)
       read (1,pgrid)
       write(2,pgrid)
+
+c
+c  there was a sign error in the pre-2011 version of the code, 
+c  if you want the original (bad) code, you need signerr = 1.0
+c
+      signerr = -1.0
+      write(*,*) 'SignErr: ',signerr
+
 C
 C  there are two modes of using PGRID:    when pot0 given, it will 
 C  use the external file (a fits file), else it will use an internal
@@ -303,11 +312,13 @@ c
 	  pos(3)=0.0
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  barzed(j,k)=(acc(1)*sin(z(k)))-(acc(2)*cos(z(k)))
+          barzed(j,k) = signerr * barzed(j,k)
 	  pos(1)=radius(j)*cos(zcenteul(k))
 	  pos(2)=radius(j)*sin(zcenteul(k))
 	  call potential (ndim,pos,acc,pot,dumtime)
 	  barzcen(j,k)=(acc(1)*sin(zcenteul(k)))
      &			 -(acc(2)*cos(zcenteul(k)))
+          barzcen(j,k) = signerr * barzcen(j,k)
           if (radius(j).gt.sr) then
             arg=2.0*((log(radius(j)-sr)/tan(spang))-z(k))+pc
             spzed(j,k)=-2.0*spamp*(radius(j)-sr)**2*

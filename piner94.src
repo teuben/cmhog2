@@ -35,10 +35,11 @@ c  warning: can only have one 'BLOCK DATA' per program
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
       REAL gomegp,rhalo,vhalo,gamma,rtstart,rtscale
+      LOGICAL balongy
       COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
      *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo,gamma,rtstart,rtscale
+     *             rhalo,vhalo,gamma,rtstart,rtscale,balongy
       DATA nx/0/
       DATA ny/0/
       END
@@ -55,10 +56,11 @@ C
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
       REAL gomegp,rhalo,vhalo,gamma,rtstart,rtscale
+      LOGICAL balongy
       COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
      *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo,gamma,rtstart,rtscale
+     *             rhalo,vhalo,gamma,rtstart,rtscale,balongy
       COMMON/ AREAD/FCMASS,AXIRAT,QUAD,CENDEN,RADLAG, INDEX
       REAL*8 FCMASS, AXIRAT, QUAD, CENDEN, RADLAG
       INTEGER INDEX
@@ -111,6 +113,11 @@ c first, set defaults:
       radlag = 6.0
       quad = 45000.0
       cenden = 24000.0
+
+c the horrible Bar along X or Y issue.... (Kim et al, 2011)
+      balongy = .TRUE.
+      write(*,*) 'Bar Along Y: ',balongy
+
 
 c override the first npar:
 c Note: input values for omega (par(1)) and amode (par(2)) 
@@ -209,6 +216,7 @@ C
       QQ = GRAVC * AMAS / RADLAG
 C  BAR NOW LIES ON THE Y AXIS. SO INVERT X AND Y TO HAVE THE SAME LAGRAN
 C  POINT AS IN THE HYDRO CODE
+c  radlog needs to be along the axis of the bar
       IF( INDEX .EQ. 0) CALL FORBA0( 0.D0, RADLAG, 0.D0,AY,AX,AZ)
       IF( INDEX .EQ. 1) CALL FORBA1( 0.D0, RADLAG, 0.D0,AY,AX,AZ)
       IF( INDEX .EQ. 2) CALL FORBA2( 0.D0, RADLAG, 0.D0,AY,AX,AZ)
@@ -287,14 +295,14 @@ c----------------------------------------------------------------------
       INTEGER nx,ny
       REAL gpot0,gpot1,crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,grmax
       REAL gomegp,rhalo,vhalo,gamma,rtstart,rtscale
+      LOGICAL balongy
       COMMON/ggrid/nx,ny,gpot0(PGMAX,PGMAX),gpot1(PGMAX,PGMAX),
      *             grmax,gomegp,
      *             crpix1,crpix2,cdelt1,cdelt2,crval1,crval2,
-     *             rhalo,vhalo,gamma,rtstart,rtscale
+     *             rhalo,vhalo,gamma,rtstart,rtscale,balongy
 
       INTEGER ix,iy
       REAL x,y,dx,dy,x3,y3,x4,y4,x8,y8,tmp
-	
    
       IF(nx.gt.0) THEN
 	 x = (pos(1)-crval1)/cdelt1 + crpix1 - 0.5
@@ -362,8 +370,17 @@ c        write(*,101) gpot(ix-1,iy-1),gpot(ix,iy-1),gpot(ix+1,iy-1)
       pot = 0.0
 c			note exchanged X and Y, since their bar
 c			is along the Y axis, ours along the X
-      CALL FISOB(pos(2), pos(1), pos(3), acc(2), acc(1), acc(3))
-      CALL PISOB(pos(2), pos(1), pos(3), pot)
+C                       Note the FISOB/PISOB routines place bar along Y
+      balongy = .FALSE.
+      IF (balongy) THEN
+c       fix bar along Y
+        CALL FISOB(pos(1), pos(2), pos(3), acc(1), acc(2), acc(3))
+        CALL PISOB(pos(1), pos(2), pos(3), pot)
+      ELSE
+c       fix bar along X
+        CALL FISOB(pos(2), pos(1), pos(3), acc(2), acc(1), acc(3))
+        CALL PISOB(pos(2), pos(1), pos(3), pot)
+      ENDIF
 c      write(*,*) 'function: ',pos(1),pos(2),pot,acc(1),acc(2)
       END
 C-----------------------------------------------------------------------
