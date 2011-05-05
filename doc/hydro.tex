@@ -44,6 +44,9 @@ HDF\footnote{{\tt cmhog} only writes the HDF4/SDS data format, no HDF5!}
 output data can be used with
 NEMO and MIRIAD for some basic visualization and data analysis.
 Only single runs are covered, restart runs are not discussed here.
+An unfortuitous bug that combined a wrong bar position angle and reversed
+the azimuthal forces from the bar was fixed in 2011, and updated
+results are further discussed in Kim, Seo, Stone, Yoon \& Teuben (2011)
 
 \end{abstract}
 
@@ -104,24 +107,26 @@ For the user this means all parameters are set in a simple ascii file
 named ``{\tt cmhogin}'' that can be edited. This file must be in the
 current directory when {\tt cmhog} starts to run (see also
 {\tt runcmhog} below for an alternative approach). Here is a sample
-{\tt cmhogin} file:
+{\tt cmhogin} file:\footnote{g77 would allow namelist 
+lines to end in {\tt \$},
+in gfortran {\tt \$end} is needed}
 
 \begin{verbatim}
 
- $rescon  $
- $hycon idiff=1,ifltn=1,tlim=2.0 $
- $ggen2 nbl=132,ymin=0.1,ymax=16.0,yrat=1.03926991,igrid=1,lgrid=.true. $
- $ggen3 nbl=80,zmin=-1.5708,zmax=1.5708,igrid=1,lgrid=.true. $
- $ijb $
- $ojb $
- $ikb $
- $okb $
- $eos ciso=5.0 $
- $pgen amp=10.0,amode=1.0,n=1.0,aob=2.5,rl=6.0,qm=4.5e4,rhoc=2.4e4,bartime=0.1 $
- $spiral spamp=0.0,spang=-0.5236,spsc=1.0,sppat=32.74,sr=4.0,pc=2.328 $
- $pgrid $
- $iocon dthdf=0.1,dtmovie=5.0,dthist=0.01 $
- $mlims cma1=3.0,cmi1=-2.0,cma2=200.0,cmi2=-200.0,cma3=200.0,cmi3=-200.0 $
+ $rescon  $end
+ $hycon idiff=1,ifltn=1,tlim=2.0 $end
+ $ggen2 nbl=132,ymin=0.1,ymax=16.0,yrat=1.03926991,igrid=1,lgrid=.true. $end
+ $ggen3 nbl=80,zmin=-1.5708,zmax=1.5708,igrid=1,lgrid=.true. $end
+ $ijb $end
+ $ojb $end
+ $ikb $end
+ $okb $end
+ $eos ciso=5.0 $end
+ $pgen amp=10.0,amode=1.0,n=1.0,aob=2.5,rl=6.0,qm=4.5e4,rhoc=2.4e4,bartime=0.1 $end
+ $spiral spamp=0.0,spang=-0.5236,spsc=1.0,sppat=32.74,sr=4.0,pc=2.328 $end
+ $pgrid $end
+ $iocon dthdf=0.1,dtmovie=5.0,dthist=0.01 $end
+ $mlims cma1=3.0,cmi1=-2.0,cma2=200.0,cmi2=-200.0,cma3=200.0,cmi3=-200.0 $end
 
 \end{verbatim}
 
@@ -140,7 +145,7 @@ Axis ratio $a/b$ of the bar, note it will be $> 1$.
 
 \item
 {\tt pgen/rl}
-Lagrangian radius, in kpc. This sets the pattern speed.
+Lagrangian radius, in kpc, along bar axis. This then sets the pattern speed.
 
 \item
 {\tt pgen/qm}
@@ -1077,6 +1082,7 @@ Machine & MHz
 	& K-zcs\footnote{Kilo zone-cycle per second, computed as 4416.65/cpu(sec)}
 	& compiler/options \\ 
 &&&&&  \\ \hline
+Core2Duo/T7300  & 2000  &        16.5 & 33.0  & 267.7 & gfortran -O2 \\  % nemo
 P-IV/512        & 3000  &        13.4 & 40.2  &       & ifc -O2 \\  % kuma 
                 &       &        10.4 & 31.2  & 423.5 & ifc -O2 -xW -tpp7 -ipo -i\_dynamic \\
 P-IV/512	& 2800	&	 21.5 &       &       & g77 -g -O2 \\  % chand
