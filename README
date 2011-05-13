@@ -1,6 +1,8 @@
 This is 'cmhog', revision 2 (cmhog2). A PPM code to simulate the 2D gas
 flow in a barred galaxy. It is based on the code Piner, Stone and Teuben
 published in their 1995 (ApJ 449, 508) article.
+This code was derived from Jim Stone's CMHOG code, see e.g.
+http://www.astro.princeton.edu/~jstone/cmhog.html
 
 Although the code stands alone, it is useful to have the MIRIAD, and
 especially, NEMO package around. See hydro.tex in the documentation
@@ -32,10 +34,10 @@ May 2011:
       Equally so, the bar was placed along the X axis, not the Y axis
       as was intended.
       This unfortuitous combination of errors made the hydro flow 
-      look just about right....
+      look just about right.... a true conspiracy!
 
     - gfortran needs $end at the end of each line in the 'cmhogin' file.
-      It is possible this still works with g77.
+      This luckily also works with g77.
 
     - we keep two variables, hardcoded, that can be tweeked back to the
       pre-2011 version of the code:
