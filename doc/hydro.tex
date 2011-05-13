@@ -386,7 +386,7 @@ For the remainder of the discussion, we will assume all data produced
 by {\tt cmhog} is dumped in a run-directory. In general, it is a good
 idea to remove any potential files {\tt cmhog} may create, though
 in practice only the {\tt hdfXXXbg} files are the problem makers
-(by default data would be appendedto any existing HDF files).
+(by default data would be appended to any existing HDF files).
 
 Depending on options given to the program, you may find the following files
 in your run directory:
@@ -425,15 +425,15 @@ paper, will then break.
 
 \item
 {\tt mdeXXXbg}
-Sample X-Y gridded density in a 8bit deep image (if dtmovie > 0)
+Sample X-Y gridded density in a 8bit deep image (if {\tt dtmovie} $>$ 0)
 
 \item
 {\tt mvrXXXbg}
-Sample X-Y gridded radial velocity in a 8bit deep image (if dtmovie > 0)
+Sample X-Y gridded radial velocity in a 8bit deep image (if {\tt dtmovie} $>$ 0)
 
 \item
 {\tt mvtXXXbg}
-Sample X-Y gridded tangential in a 8bit deep image (if dtmovie > 0)
+Sample X-Y gridded tangential in a 8bit deep image (if {\tt dtmovie} $>$ 0)
 
 \end{itemize}
 
@@ -1082,6 +1082,8 @@ Machine & MHz
 	& K-zcs\footnote{Kilo zone-cycle per second, computed as 4416.65/cpu(sec)}
 	& compiler/options \\ 
 &&&&&  \\ \hline
+Intel i7 870    & 2930  &         5.22 &      & 4891  & g77 -g -O2 \\ % chara @ 2011
+                &       &         4.76 &      & 442.  & \\
 Core2Duo/T7300  & 2000  &        16.5 & 33.0  & 267.7 & gfortran -O2 \\  % nemo
 P-IV/512        & 3000  &        13.4 & 40.2  &       & ifc -O2 \\  % kuma 
                 &       &        10.4 & 31.2  & 423.5 & ifc -O2 -xW -tpp7 -ipo -i\_dynamic \\
