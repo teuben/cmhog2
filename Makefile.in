@@ -5,6 +5,7 @@
 #    modified1:  August, 1994		using FFLAGS/LDFLAGS		pjt
 #    linux:	 Oct, 2000
 #    autoconfed' for cmhog V2:   Mar 2001
+#    comments on HDF locations   2013
 #-------------------  object files  ------------------------------------
 
 COBJ =  bcdflt.c checkin.c
@@ -80,7 +81,7 @@ XHDFLIB = $(HDF_HOME)/libmfhdf.a $(HDF_HOME)/libdf.a \
 YHDFLIB = $(HDF_HOME)/libdf.a $(HDF_HOME)/libjpeg.62.dylib  /usr/lib/libz.1.dylib
 
 CFITSIO = @CFITSIO_LIB@
-LIB    = -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg $(CFITSIO)
+LIB    = -L/usr/lib/hdf -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg $(CFITSIO)
 
 
 #--------------------  implicit rules  ---------------------------------
