@@ -1059,10 +1059,35 @@ Optional Packages:
  
 \end{verbatim}
 
-If compilation still fails, e.g. due to the FITSIO interface, you may also manually need to edit
-the Makefile to the correct path of where FITSIO (normally libcfitsio.a ) is located. Also
+\subsection{CFITSIO}
+
+If compilation still fails, e.g. due to the CFITSIO interface, you may also manually need to edit
+the Makefile to the correct path of where CFITSIO (normally libcfitsio.a ) is located. Also
 look at the cmhog.def file. Both files will be overwritten if you run {\tt configure} though, so
 use the manual solution with care.
+
+
+\subsection{HDF4}
+
+It is also possible that your install fails due to an HDF4 problem (note that CMHOG2
+uses the older version 4 of HDF, not HDF5).
+Recently the binaries that
+NCSA provides (e.g. for version 4.2.8) were compiled with {\tt SZIP} compression enabled, 
+although the default in the source code install is that it is disabled. If you see
+an undefined reference to {\tt SZ\_encoder\_enabled}, you will either have to install
+the SZIP library, or re-install HDF4 with {\tt configure --without-szlib}.  If you have
+NEMO installed, look at {\tt \$NEMO/src/scripts/hdf.install}.  
+As an example, for Ubuntu 12.04LTS, the system provided HDF4 libraries in /usr/lib work.
+
+
+\subsection{autoconf}
+
+{\tt cmhog} uses a file {\tt configure.in}\footnote{this is an older version of autoconf,
+newer versions will use {\tt configure.ac}}.  The program {\tt autoconf} produces a new
+version of {\tt configure} from this file, might you need an updated version. The {\tt configure}
+script will then transform the {\tt Makefile.in} and  {\tt cmhog.def.in} into their
+working counterpart. You can see,  by editing files such a {\tt Makefile} and {\tt cmhog.in}
+you run the risk of loosing your work on a subsequent.
 
 
 \newpage
