@@ -2,6 +2,9 @@
 
 all:	hydro.ps  hydro_2.ps hydro.pdf
 
+clean:  
+	rm -f hydro.ps  hydro_2.ps hydro.pdf
+
 hydro.ps:	hydro.dvi
 	dvips hydro -o
 
