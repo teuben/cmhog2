@@ -669,11 +669,14 @@ rotating bar, as is used in the hydro models:\newline
  
 Projecting a bar to match observations takes 3 geometric parameters:
 position angle and inclination of the galactic disk, and position
-angle of the bar. In addition there will be centering (xpos,ypos,vsys)
+angle of the bar, all measured from the sky. 
+In addition there will be centering (xpos,ypos,vsys)
 and scaling (pscale, vscale) parameters, that will come later. To
 aid in figuring out the geometric projection, a script {\tt project}
 was written, that projects the model from the previous section. It
-is somewhat taylored for the way we measure angles in astronomy.
+is somewhat taylored for the way we measure angles in astronomy. In 
+here {\tt phi} is defined as the angle between bar and disk, as
+measured in the plane of the sky.
 
 \footnotesize\begin{verbatim}
 #! /bin/csh -f 
@@ -682,7 +685,7 @@ is somewhat taylored for the way we measure angles in astronomy.
 #> RADIO rotation=ccw   ccw,cw
 #> SCALE pa=0		-180:180:1
 #> SCALE phi=0		-90:90:1
-#> RADIO yapp=/xs       /xs,/vps,/ps
+#> RADIO yapp=/xs       /xs,/vps,/ps,/gif
 #> ENTRY text=  
 
 
