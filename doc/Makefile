@@ -1,6 +1,6 @@
 #
 
-all:	hydro.ps  hydro_2.ps
+all:	hydro.ps  hydro_2.ps hydro.pdf
 
 hydro.ps:	hydro.dvi
 	dvips hydro -o
@@ -11,3 +11,7 @@ hydro.dvi:	hydro.tex
 
 hydro_2.ps: hydro.ps
 	psnup -2 hydro.ps  > hydro_2.ps
+
+
+hydro.pdf:	hydro.ps
+	ps2pdf hydro.ps
