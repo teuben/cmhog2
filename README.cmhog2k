@@ -1,0 +1,63 @@
+The experimental new module, where the CMHOG2_WTK is being tested, is in a CVS module
+called "cmhog2k", which parallels this version. The aim is to have both these version
+do the same, but for various reasons there are differences between the codes.
+
+
+bndry.h            -
+cvmgt.h            -
+fftw3.h            <new>
+fftw_f77.h         <new>
+field.h            #ifdef SELFGRAV
+grav.h             <new>
+grid.h             bhycen(jn,kn),bhyed(jn,kn)
+param.h            SELFGRAV,CARTESIAN
+pseudop.h          <new>
+root.h             spifract,strfile
+scratch.h          -
+
+bval.src           TAPERED,OUTFLOW,
+cut.src            <new>
+cvmgt.src          -
+dataio.src         minor I/O
+empty.src          -
+findno.src         -
+galaxy_blobs.src   -
+galaxy.src         the major signerr stuff, bh stuff, fftw3 etc. PINERMODEL,YUANMODEL,ROBERTSMODEL
+ggen.src           PSEUDOP,CARTESIAN
+gpot_bk.src        <new>
+gpotforce.src      <new>
+gpotint.src        <new>
+gpot.src           <new>
+hdfall.src         PSEUDOP
+hdump.src          two more nscal
+intchk.src         - some commentd out code
+isoshockquad.src   -
+main.src           etime stuff mostly
+movie.src          spifract vs. barfract
+mstart.src         no cmhogout, other things written though
+noise.src          -
+nudt.src           SELFGRAV, spifract vs. barfract
+piner94.src        balongy stuff related to angle; PINERMODEL
+self_dintp.src     <new>
+self_gpot.src      <new>
+self_pintp.src     <new>
+setup.src          -
+solver.src         PSEUDOP,SELFGRAV,CUT,
+strtoi.src         -
+wy-piner94.src     <new>
+yintlgrg.src       SELFGRAV,spifract vs. barfract
+yintrmp.src        qa =   <not sure why that is>
+ylgrg.src          SELFGRAV, spifract vs. barfract
+yremap.src         -
+zintlgrg.src       SELFGRAV, spifract vs. barfract
+zintrmp.src        -
+zlgrg.src          SELFGRAV, spifract vs. barfract
+zremap.src         -
+
+
+According to the GNU manual, ETIME() is a subroutine now, with 2 arguments:
+
+CALL ETIME(VALUES, TIME)
+VALUES(1):	User time in seconds. 
+VALUES(2):	System time in seconds. 
+TIME:	Run time since start in seconds.       i.e.   values(1)+values(2)
