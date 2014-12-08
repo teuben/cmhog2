@@ -1,24 +1,32 @@
 dnl Process this file with autoconf to produce a configure script.
 AC_INIT(bcdflt.c)
 
+AC_MSG_CHECKING([cmhog2 configuration])
+
+
 dnl Checks for programs.
 
 dnl AC_CANONICAL_SYSTEM
 AC_CANONICAL_HOST
+echo "Found CANONICAL_HOST = $host_os"
 
+AC_HEADER_STDC
+AC_CHECK_FUNCS(strchr memcpy)
 
-AC_LANG_C
-
+dnl Use native cc if present
+AC_MSG_CHECKING([for vendor's cc to be used instead of gcc])
+AC_CHECK_PROG(CC, cc, cc)
 
 AC_PROG_CC
 AC_PROG_CPP
-dnl ??? AC_REQUIRE_CPP
-AC_PROG_F77
+AC_PROG_INSTALL
+AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PROG_RANLIB
 
 dnl Check for fortran compiler
-AC_MSG_CHECKING(whether we have a FORTRAN 77 compiler)
-AC_CHECK_PROGS(F77, f77 g77 xlf xlf77 fl32 fort77 fc cf77 frt f90 xlf90)
+AC_MSG_CHECKING(whether we have a good FORTRAN 77 compiler)
+AC_CHECK_PROGS(F77, gfortran g77 g95 ifort ifc xlf xlf77 fl32 fort77 fc cf77 frt f90 xlf90)
 AC_PROG_F77
 if test -n "$F77"; then
   if test -n "$GCC"; then
@@ -39,8 +47,9 @@ if test -n "$F77"; then
 else
   F77="$CC"
   fortran=no
-  AC_MSG_WARN(no FORTRAN compiler)
+  AC_MSG_WARN([no FORTRAN compiler])
 fi
+
 
 dnl fix up CPP when GCC is the compiler
 dnl should also use gcc if e.g. intel of pgi compiler is used ???
@@ -155,4 +164,5 @@ AC_HEADER_TIME
 dnl Checks for library functions.
 AC_CHECK_FUNCS(mkdir select)
 
-AC_OUTPUT(Makefile cmhog.def)
+AC_CONFIG_FILES(Makefile cmhog.def)
+AC_OUTPUT
