@@ -80,7 +80,15 @@ XHDFLIB = $(HDF_HOME)/libmfhdf.a $(HDF_HOME)/libdf.a \
 # else two undefined variables are left....   restFP, saveFP
 YHDFLIB = $(HDF_HOME)/libdf.a $(HDF_HOME)/libjpeg.62.dylib  /usr/lib/libz.1.dylib
 
+# The local HDF4
+ZHDFLIB = -Lhdf4/lib -lmfhdf -ldf -lz -ljpeg
+
 CFITSIO = @CFITSIO_LIB@
+
+# pick one of the 4 'LIB=' below
+# LIB = $(XHDFLIB) $(CFITSIO) 
+# LIB = $(YHDFLIB) $(CFITSIO) 
+# LIB = $(ZHDFLIB) $(CFITSIO)
 LIB    = -L/usr/lib/hdf -L/usr/local/lib -L/local/lib -ldf -lz -ljpeg $(CFITSIO)
 
 
@@ -134,6 +142,14 @@ testgrid: testgrid.src
 grid:	grid.c
 	$(CC) -I$(NEMOINC) -I$(NEMOLIB) -o grid grid.c -L$(NEMOLIB) -lnemo -lm
 
+#-----------------------------------------------------------------------
+#  alternative way to install HDF4 locally with static binaries
+#  it depends on our version of HDF4 that we need to sync from NCSA
+hdf4:
+	cvs co hdf4
+
+myhdf4: hdf4
+	(cd hdf4; ./configure --prefix=`pwd`; make clean; make; make install)
 #-----------------------------------------------------------------------
 
 RUN = run1
