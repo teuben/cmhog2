@@ -3,6 +3,11 @@ called "cmhog2k", which parallels this version. The aim is to have both these ve
 do the same, but for various reasons there are differences between the codes.
 
 
+bcdflt.c           -
+checkin.c          -
+grid.c             -
+runcmhog.c         -
+
 bndry.h            -
 cvmgt.h            -
 fftw3.h            <new>
