@@ -1081,16 +1081,18 @@ an undefined reference to {\tt SZ\_encoder\_enabled}, you will either have to in
 the SZIP library, or re-install HDF4 with {\tt configure --without-szlib}.  If you have
 NEMO installed, look at {\tt \$NEMO/src/scripts/hdf.install}.  
 As an example, for Ubuntu 12.04LTS, the system provided HDF4 libraries in /usr/lib work.
-
+On a bind, you can use a version of HDF4 we keep in our CVS repository. See the Makefile
+for details, but essentially the command would be to {\tt make hdf4} from the {\tt cmhog2}
+directory.
 
 \subsection{autoconf}
 
-{\tt cmhog} uses a file {\tt configure.in}\footnote{this is an older version of autoconf,
-newer versions will use {\tt configure.ac}}.  The program {\tt autoconf} produces a new
+{\tt cmhog} uses a file {\tt configure.ac}\footnote{older versions of autoconf
+used {\tt configure.in}}.  The program {\tt autoconf} produces a new
 version of {\tt configure} from this file, might you need an updated version. The {\tt configure}
 script will then transform the {\tt Makefile.in} and  {\tt cmhog.def.in} into their
 working counterpart. You can see,  by editing files such a {\tt Makefile} and {\tt cmhog.in}
-you run the risk of loosing your work on a subsequent.
+you run the risk of loosing your work on a subsequent installation.
 
 
 \newpage
