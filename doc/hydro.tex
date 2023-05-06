@@ -1028,15 +1028,10 @@ END
 
 \section{Installation}
 
-The best way to obtain {\tt cmhog} is via 
-anonymous CVS\footnote{See {\tt http://www.astro.umd.edu/~teuben/miriad/cvs.html}
-for more details on CVS usage}: 
+The best way to obtain {\tt cmhog} is via git:
 
 \begin{verbatim}
-	cvs -d :pserver:anonymous@cvs.astro.umd.edu:/home/cvsroot login
-		(no password required, just hit ENTER)
-	cvs -d :pserver:anonymous@cvs.astro.umd.edu:/home/cvsroot co cmhog2
-		(this will create a cmhog directory)
+        git clone https://github.com/teuben/cmhog2
 	cd cmhog2
 	configure --help              (study the options you may which to use, see below)
 	configure
@@ -1062,6 +1057,16 @@ Optional Packages:
  
 \end{verbatim}
 
+\subsection{Ubuntu}
+
+Here's an example of packages needed for Ubuntu22.04
+
+\begin{verbatim}
+    sudo apt install hdf4 hdf4-tools cfitsio gfortran make
+
+\end{verbatim}
+
+
 \subsection{CFITSIO}
 
 If compilation still fails, e.g. due to the CFITSIO interface, you may also manually need to edit
@@ -1084,6 +1089,8 @@ As an example, for Ubuntu 12.04LTS, the system provided HDF4 libraries in /usr/l
 On a bind, you can use a version of HDF4 we keep in our CVS repository. See the Makefile
 for details, but essentially the command would be to {\tt make hdf4} from the {\tt cmhog2}
 directory.
+
+Note (2023) - compilation using HDF version 4.2.15-4 on Ubuntu22.04 worked.
 
 \subsection{autoconf}
 
@@ -1116,8 +1123,9 @@ Machine & MHz
 	& K-zcs\footnote{Kilo zone-cycle per second, computed as 4416.65/cpu(sec)}
 	& compiler/options \\ 
 &&&&&  \\ \hline
-i7-3820         & 3600  &         3.39 &      & 1303 & gfortran -g -O2 \\ % inferno @ 2014
-i7-3630QM       & 2400  &         3.58 &      & 1235 & gfortran -g -O2 \\ % nemo2 @ 2014
+i7-1185G7       & 4800  &         1.50 & 7.2  & 2944 & gfortran -g -O2 \\ % DL5420 @ 2023
+i7-3820         & 3600  &         3.39 & 12.2 & 1303 & gfortran -g -O2 \\ % inferno @ 2014
+i7-3630QM       & 2400  &         3.58 & 8.6  & 1235 & gfortran -g -O2 \\ % nemo2 @ 2014
 
 Intel i7 870    & 2930  &         5.22 &      & 846  & g77 -g -O2 \\ % chara @ 2011
                 &       &         4.76 &      & 928  & \\
@@ -1198,6 +1206,8 @@ ratio of gnu to intel compiler on a Piv/2.2
  154
 
 \end{verbatim}
+
+
 
 \end{document}
 
